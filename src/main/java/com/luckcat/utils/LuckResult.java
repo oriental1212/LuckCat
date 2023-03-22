@@ -17,7 +17,6 @@ public class LuckResult {
 
     private static  final String SUCCESS_CODE = "200";
     private static  final String SUCCESS_MSG = "请求成功";
-    private static  final String ERROR_CODE = "500";
 
     public static LuckResult success(){
         LuckResult result = new LuckResult();
@@ -34,7 +33,6 @@ public class LuckResult {
 
     public static LuckResult error(String msg){
         LuckResult result = new LuckResult();
-        result.setCode(ERROR_CODE);
         result.setMsg(msg);
         return result;
     }
