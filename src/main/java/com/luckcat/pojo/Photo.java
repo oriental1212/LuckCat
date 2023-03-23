@@ -20,6 +20,8 @@ public class Photo {
     private Integer id;
     @TableField("photo_name")
     private String photoName;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     @TableField("user_id")
     private Long userId;
     @TableField("photo_type")

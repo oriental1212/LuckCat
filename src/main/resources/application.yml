@@ -14,5 +14,9 @@ spring:
       time-between-eviction-runs-millis: 2000 # 间隔多久进行检测需要关闭的空闲连接
       min-evictable-idle-time-millis: 600000 # 配置连接在池中最小生存的时间
       max-wait-thread-count: 20 # 最大等待线程数
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher #基于AntPathMatcher的路径匹配
+
 server:
   port: 1111

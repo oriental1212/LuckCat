@@ -1,7 +1,8 @@
 package com.luckcat.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.luckcat.pojo.Photo;
 import org.springframework.stereotype.Service;
 
-@Service
-public interface PhotoService {
+public interface PhotoService extends IService<Photo> {
 }
