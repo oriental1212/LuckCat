@@ -1,4 +1,4 @@
-package com.luckcat.service.impl;
+package com.luckcat.service.Impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.luckcat.dao.PhotoMapper;

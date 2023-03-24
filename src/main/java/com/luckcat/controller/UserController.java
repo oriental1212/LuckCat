@@ -2,15 +2,19 @@ package com.luckcat.controller;
 
 
 
+import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.luckcat.dto.UserLogin;
+import com.luckcat.dto.UserRegister;
 import com.luckcat.pojo.User;
 import com.luckcat.service.UserService;
 import com.luckcat.utils.LuckResult;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.io.Serializable;
 import java.util.List;
 
 import static com.luckcat.utils.LuckResult.success;
@@ -23,10 +27,8 @@ import static com.luckcat.utils.LuckResult.success;
  */
 @RestController
 @RequestMapping("user")
+@Api("用户接口")
 public class UserController  {
-    /**
-     * 服务对象
-     */
     @Resource
     private UserService userService;
 
@@ -43,25 +45,39 @@ public class UserController  {
     }
 
     /**
-     * 通过主键查询单条数据
+     * 登录用户接口
      *
-     * @param id 主键
-     * @return 单条数据
+     * @param userLogin 实体对象
+     * @return 登录结果
      */
-    @GetMapping("{id}")
-    public LuckResult selectOne(@PathVariable Serializable id) {
-        return success(this.userService.getById(id));
+    @ApiOperation("登录用户接口")
+    @GetMapping("/loginUser")
+    public LuckResult selectOne(@RequestBody UserLogin userLogin) {
+        if(userLogin.getAccount() != null && userLogin.getPassword() != null){
+            userService.LoginUser(userLogin);
+            return success("登录成功的喔！");
+        }
+        return success("账号和密码不能为空的喔！");
     }
 
     /**
-     * 新增数据
+     * 注册用户接口
      *
-     * @param user 实体对象
+     * @param userRegister 实体对象
      * @return 新增结果
      */
-    @PostMapping
-    public LuckResult insert(@RequestBody User user) {
-        return success(this.userService.save(user));
+    @ApiOperation("新增用户接口")
+    @PostMapping("/registerUser")
+    public LuckResult insert(@RequestBody UserRegister userRegister) {
+        //邮箱的正则校验
+        String EmailMatch = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
+        if(userRegister.getEmail() != null && userRegister.getEmail().matches(EmailMatch)){
+            if(userRegister.getPassword() != null && userRegister.getUsername() != null){
+                SaResult saResult = userService.addUser(userRegister);
+                return success(saResult);
+            }
+        }
+        return LuckResult.error("参数不合法，请重新传递");
     }
 
     /**

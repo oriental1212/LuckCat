@@ -28,8 +28,8 @@ public class SpringFoxSwaggerConfig {
     @Bean
     public ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("Swagger Test App Restful API")
-                .description("swagger test app restful api")
+                .title("LuckCat图库")
+                .description("LuckCat图库接口文档信息")
                 .version("1.0")
                 .build();
     }
@@ -43,7 +43,6 @@ public class SpringFoxSwaggerConfig {
     public Docket createRestApi(ApiInfo apiInfo) {
         return new Docket(DocumentationType.OAS_30)
                 .apiInfo(apiInfo)
-                .groupName("SwaggerGroupOneAPI")
                 .select()
                 .apis(RequestHandlerSelectors.withClassAnnotation(RestController.class))
                 .paths(PathSelectors.any())
