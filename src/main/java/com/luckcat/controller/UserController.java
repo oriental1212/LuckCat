@@ -21,7 +21,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.luckcat.utils.LuckResult.success;
+import static com.luckcat.utils.LuckResult.*;
 
 /**
  * (User)表控制层
@@ -58,10 +58,9 @@ public class UserController  {
     @GetMapping("/loginUser")
     public LuckResult login(@RequestBody UserLogin userLogin) {
         if(userLogin.getAccount() != null && userLogin.getPassword() != null){
-            userService.LoginUser(userLogin);
-            return success("登录成功的喔！");
+            return info(userService.LoginUser(userLogin));
         }
-        return success("账号和密码不能为空的喔！");
+        return error("账号和密码不能为空的喔！");
     }
 
     /**

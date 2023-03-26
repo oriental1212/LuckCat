@@ -38,4 +38,12 @@ public class LuckResult {
         return result;
     }
 
+    public static LuckResult info(Object data){
+        LuckResult result = new LuckResult();
+        result.setCode(SUCCESS_CODE);
+        result.setMsg("请求信息");
+        result.setData(data);
+        return result;
+    }
+
 }
