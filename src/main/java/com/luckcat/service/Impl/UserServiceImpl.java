@@ -6,6 +6,7 @@ import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -39,10 +40,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional
     public synchronized SaResult addUser(UserRegister userRegister) {
-        //校验该邮箱是否已经注册过
-        QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("email", userRegister.getEmail());
-        if(userMapper.selectOne(wrapper) != null){
+        //校验该用户名或邮箱是否已经注册过
+        LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userLambdaQueryWrapper.eq(User::getUsername,userRegister.getUsername())
+                .or()
+                .eq(User::getEmail,userRegister.getEmail());
+        if (userMapper.exists(userLambdaQueryWrapper)) {
             return SaResult.data("此用户已经注册，不可以重复注册哟");
         }
         User newUser = new User();
@@ -85,6 +88,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("username", userLogin.getAccount()).or().eq("email", userLogin.getAccount());
         List<User> users = userMapper.selectList(wrapper);
+        //判断用户是否存在
+        if (users == null || users.size()==0) {
+            return SaResult.data("该账号不存在！");
+        }
         //遍历判断
         for (User user : users) {
             if (BCrypt.checkpw(userLogin.getPassword(),user.getPassword())){
@@ -100,6 +107,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return SaResult.data("您的密码不正确哟！");
     }
+
 
     //找回密码邮件发送
 
