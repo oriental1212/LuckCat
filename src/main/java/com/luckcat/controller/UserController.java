@@ -2,9 +2,12 @@ package com.luckcat.controller;
 
 
 
+import cn.dev33.satoken.stp.SaTokenInfo;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.luckcat.config.Exception.LuckCatError;
 import com.luckcat.dto.UserLogin;
 import com.luckcat.dto.UserRegister;
 import com.luckcat.pojo.User;
@@ -15,14 +18,15 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.luckcat.utils.LuckResult.success;
 
 /**
  * (User)表控制层
  *
- * @author makejava
+ * @author Oriental
  * @since 2023-03-23 09:06:07
  */
 @RestController
@@ -52,7 +56,7 @@ public class UserController  {
      */
     @ApiOperation("登录用户接口")
     @GetMapping("/loginUser")
-    public LuckResult selectOne(@RequestBody UserLogin userLogin) {
+    public LuckResult login(@RequestBody UserLogin userLogin) {
         if(userLogin.getAccount() != null && userLogin.getPassword() != null){
             userService.LoginUser(userLogin);
             return success("登录成功的喔！");
@@ -68,7 +72,7 @@ public class UserController  {
      */
     @ApiOperation("新增用户接口")
     @PostMapping("/registerUser")
-    public LuckResult insert(@RequestBody UserRegister userRegister) {
+    public LuckResult register(@RequestBody UserRegister userRegister) {
         //邮箱的正则校验
         String EmailMatch = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
         if(userRegister.getEmail() != null && userRegister.getEmail().matches(EmailMatch)){
@@ -81,25 +85,62 @@ public class UserController  {
     }
 
     /**
-     * 修改数据
+     * 查询用户在线接口
      *
-     * @param user 实体对象
-     * @return 修改结果
+     * @return 登录状态结果
      */
-    @PutMapping
-    public LuckResult update(@RequestBody User user) {
-        return success(this.userService.updateById(user));
+    @ApiOperation("查询用户在线接口")
+    @GetMapping("/isLoginUser")
+    public LuckResult isLogin() {
+        SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
+        if(tokenInfo.getIsLogin()){
+            Map<String, Object> returnMap = new HashMap<>();
+            try {
+                Long uid = (Long) tokenInfo.getLoginId();
+                StpUtil.logout(uid);
+                StpUtil.login(uid);
+                returnMap.put("msg","查询到用户已登录，token已更新");
+                returnMap.put("newToken",StpUtil.getTokenInfo());
+            } catch (LuckCatError e) {
+                throw new LuckCatError("更新token失败，重新请求更新");
+            }
+            return success(returnMap);
+        }else{
+            return LuckResult.error("未查询到用户，用户未登录或已过期,需要重新登录");
+        }
     }
 
     /**
-     * 删除数据
+     * 发送找回密码邮件接口
      *
-     * @param idList 主键结合
-     * @return 删除结果
+     * @param email,url 邮箱和找回密码的地址
+     * @return 成功找到，且发送邮件
      */
-    @DeleteMapping
-    public LuckResult delete(@RequestParam("idList") List<Long> idList) {
-        return success(this.userService.removeByIds(idList));
+    @ApiOperation("发送找回密码邮件接口")
+    @GetMapping("/findPasswordMail/{email}/{url}")
+    public LuckResult findPasswordMail(@PathVariable("email") String email,@PathVariable("url") String url) {
+        String EmailMatch = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
+        if(email.matches(EmailMatch) && !url.isEmpty()){
+            return userService.findPasswordMail(email,url);
+        }
+        return LuckResult.error("邮箱格式不对哟");
     }
+
+    /**
+     * 找回密码接口
+     *
+     * @param email,url 邮箱和找回密码的地址
+     * @return 成功找到，且发送邮件
+     */
+    @ApiOperation("找回密码接口")
+    @GetMapping("/updatePassword/{email}/{password}")
+    public LuckResult updatePassword(@PathVariable("email") String email,@PathVariable("password") String password){
+        String EmailMatch = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
+        if(email.matches(EmailMatch) && !password.isEmpty()){
+            return userService.updatePassword(email,password);
+        }
+        return LuckResult.error("邮箱格式不对哟");
+    }
+
 }
 

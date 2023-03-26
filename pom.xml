@@ -97,6 +97,16 @@
             <artifactId>sa-token-jwt</artifactId>
             <version>1.34.0</version>
         </dependency>
+        <!--mail邮箱服务-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <!--thymeleaf-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
 
 
     </dependencies>

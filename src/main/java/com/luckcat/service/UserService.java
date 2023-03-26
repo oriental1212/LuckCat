@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.luckcat.dto.UserLogin;
 import com.luckcat.dto.UserRegister;
 import com.luckcat.pojo.User;
-import org.springframework.stereotype.Service;
+import com.luckcat.utils.LuckResult;
 
 public interface UserService extends IService<User> {
     SaResult addUser(UserRegister userRegister);
     SaResult LoginUser(UserLogin userLogin);
+    LuckResult findPasswordMail(String email, String url);
+    LuckResult updatePassword(String email,String password);
 }

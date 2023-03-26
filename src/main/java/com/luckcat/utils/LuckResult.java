@@ -33,6 +33,7 @@ public class LuckResult {
 
     public static LuckResult error(String msg){
         LuckResult result = new LuckResult();
+        result.setCode("500");
         result.setMsg(msg);
         return result;
     }
