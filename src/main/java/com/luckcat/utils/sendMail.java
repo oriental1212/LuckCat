@@ -50,7 +50,7 @@ public class sendMail {
             //定义模板数据
             context.setVariables(map);
             //获取thymeleaf的html模板
-            String emailContent = templateEngine.process("/templates/findPassword.html",context); //指定模板路径
+            String emailContent = templateEngine.process("findPassword",context); //指定模板路径
             messageHelper.setText(emailContent,true);
             //发送邮件
             mailSender.send(mimeMessage);
