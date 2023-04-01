@@ -88,3 +88,9 @@ sa-token:
   is-log: false
   # jwt秘钥
   jwt-secret-key: luckcatmingmingdongfang
+
+minio:
+  username: admin
+  key: 12345678
+  url: http://localhost:9000
+  buckName: photo

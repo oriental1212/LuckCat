@@ -1,16 +1,25 @@
 package com.luckcat.controller;
 
+import cn.hutool.core.io.FileTypeUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.luckcat.dto.PhotoAdd;
+import com.luckcat.dto.PhotoPage;
 import com.luckcat.pojo.Photo;
 import com.luckcat.service.PhotoService;
 import com.luckcat.utils.LuckResult;
+import com.luckcat.utils.PhotoUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.util.List;
 
+import static com.luckcat.utils.LuckResult.error;
 import static com.luckcat.utils.LuckResult.success;
 
 /**
@@ -21,6 +30,7 @@ import static com.luckcat.utils.LuckResult.success;
  */
 @RestController
 @RequestMapping("photo")
+@Api("图像操作接口")
 public class PhotoController  {
     /**
      * 服务对象
@@ -28,38 +38,55 @@ public class PhotoController  {
     @Resource
     private PhotoService photoService;
 
+    @Resource
+    private PhotoUtils photoUtils;
+
+
     /**
-     * 分页查询所有数据
+     * 文件下载
      *
-     * @param page 分页对象
-     * @param photo 查询实体
-     * @return 所有数据
+     * @param fileName 分页查询类
+     * @return List数据
      */
-    @GetMapping
-    public LuckResult selectAll(Page<Photo> page, Photo photo) {
-        return success(this.photoService.page(page, new QueryWrapper<>(photo)));
+    @ApiOperation("文件下载")
+    @GetMapping("/download/{fileName}")
+    public LuckResult download(@PathVariable("fileName") String fileName,HttpServletResponse response) {
+        if(!fileName.isEmpty()){
+            photoService.download(fileName, response);
+        }
+        return success("下载成功");
     }
 
     /**
-     * 通过主键查询单条数据
+     * 通过用户查询所有图片地址
      *
-     * @param id 主键
-     * @return 单条数据
+     * @param photoPage 分页查询类
+     * @return List数据
      */
-    @GetMapping("{id}")
-    public LuckResult selectOne(@PathVariable Serializable id) {
-        return success(this.photoService.getById(id));
+    @ApiOperation("通过用户查询所有图片地址")
+    @GetMapping("/queryByUsername")
+    public LuckResult queryByUsername(@RequestBody PhotoPage photoPage) {
+        if(!photoPage.getUsername().isEmpty() && photoPage.getPage()>0 && photoPage.getSize()>0){
+            return photoService.queryByUsername(photoPage);
+        }
+        return error("你的用户名为空");
     }
 
     /**
-     * 新增数据
+     * 上传图像
      *
-     * @param photo 实体对象
+     * @param file,photoAdd 文件
      * @return 新增结果
      */
-    @PostMapping
-    public LuckResult insert(@RequestBody Photo photo) {
-        return success(this.photoService.save(photo));
+    @PostMapping("/upload")
+    @ApiOperation("上传图片接口")
+    public LuckResult upload(@RequestBody MultipartFile file, PhotoAdd photoAdd) {
+        for (Object type : photoUtils.AllPhotoType()) {
+            if(FileTypeUtil.getType(file.getOriginalFilename()).equals(type)){
+                return photoService.upload(file,photoAdd);
+            }
+        }
+        return success("您的图片格式不对劲哟！");
     }
 
     /**
