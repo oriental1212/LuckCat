@@ -23,13 +23,26 @@ public class SaTokenConfigure implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册路由拦截器，自定义认证规则
         registry.addInterceptor(new SaInterceptor(handler -> {
-                    // 登录认证 -- 拦截所有路由，并排除/user/loginUser 用于开放登录
-                    SaRouter.match("/**", "/user/loginUser", r -> StpUtil.checkLogin());
+                    // 登录认证 -- 拦截所有路由，并判断是否登录
+                    SaRouter.match("/**",r -> StpUtil.checkLogin());
                 }).isAnnotation(true))
                 //拦截所有接口
                 .addPathPatterns("/**")
-                // 不拦截/user/loginUser
-                .excludePathPatterns("/user/loginUser");
+                // 不拦截的接口
+                .excludePathPatterns(
+                        "/user/loginUser",
+                        "/user/registerUser",
+                        "/user/updatePassword",
+                        "/user/findPasswordMail"
+                        )
+                .excludePathPatterns(
+                        "/swagger-ui.html",
+                        "/swagger-ui/**",
+                        "/swagger-resources/**",
+                        "/v2/api-docs",
+                        "/v3/api-docs",
+                        "/webjars/**"
+                );
     }
 
     // Sa-Token 整合 jwt (Simple 简单模式)

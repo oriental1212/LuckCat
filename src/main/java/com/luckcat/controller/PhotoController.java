@@ -11,6 +11,7 @@ import com.luckcat.utils.LuckResult;
 import com.luckcat.utils.PhotoUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,6 +19,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Objects;
 
 import static com.luckcat.utils.LuckResult.error;
 import static com.luckcat.utils.LuckResult.success;
@@ -31,6 +33,7 @@ import static com.luckcat.utils.LuckResult.success;
 @RestController
 @RequestMapping("photo")
 @Api("图像操作接口")
+@Slf4j
 public class PhotoController  {
     /**
      * 服务对象
@@ -80,10 +83,16 @@ public class PhotoController  {
      */
     @PostMapping("/upload")
     @ApiOperation("上传图片接口")
-    public LuckResult upload(@RequestBody MultipartFile file, PhotoAdd photoAdd) {
+    public LuckResult upload(@RequestBody MultipartFile file,
+                             @RequestParam("photoTag") String photoTag,
+                             @RequestParam("userName") String userName) {
         for (Object type : photoUtils.AllPhotoType()) {
-            if(FileTypeUtil.getType(file.getOriginalFilename()).equals(type)){
-                return photoService.upload(file,photoAdd);
+//            if(FileTypeUtil.getType(file.getOriginalFilename()).equals(type)){
+//                log.info("file:{}",file.toString(),"photoAdd:{}",photoAdd);
+//                return photoService.upload(file,photoAdd);
+//            }
+            if (Objects.equals(file.getContentType(), type)) {
+                return photoService.upload(file,new PhotoAdd(userName,photoTag));
             }
         }
         return success("您的图片格式不对劲哟！");

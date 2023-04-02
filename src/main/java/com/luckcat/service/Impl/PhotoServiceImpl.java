@@ -51,7 +51,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         String photoname = today + "-" + file.getOriginalFilename().substring(0,file.getOriginalFilename().indexOf("."));
         //根据username查询userid
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper.eq("photo_name",photoAdd.getUserName());
+        userQueryWrapper.eq("username",photoAdd.getUserName());
         Long userid;
         try {
             userid = userMapper.selectOne(userQueryWrapper).getUid();

@@ -18,10 +18,10 @@ public class PhotoUtils {
     @Bean
     public List AllPhotoType (){
         ArrayList<String> list = new ArrayList<>();
-        list.add("jpeg");
-        list.add("png");
-        list.add("gif");
-        list.add("jpg");
+        list.add("image/jpeg");
+        list.add("image/png");
+        list.add("image/gif");
+        list.add("image/jpg");
         return list;
     }
 }
