@@ -28,6 +28,8 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
@@ -69,16 +71,27 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         if (StringUtils.isBlank(originalFilename)){
             throw new LuckCatError("图片名字为空");
         }
+        InputStream fileInputStream=null;
         //设置文件储存的文件夹路劲
         String objectName = DateUtil.year(date) + "/" + (DateUtil.month(date) + 1) + "/" + DateUtil.dayOfMonth(date) + "/" + photoname;
         try {
+            fileInputStream = file.getInputStream();
             PutObjectArgs objectArgs = PutObjectArgs.builder().bucket(minioInit.getBucketName()).object(objectName)
-                    .stream(file.getInputStream(), file.getSize(), -1).contentType(file.getContentType()).build();
+                    .stream(fileInputStream, file.getSize(), -1).contentType(file.getContentType()).build();
             //文件名称相同会覆盖
             minioInit.createMinio().putObject(objectArgs);
         } catch (Exception e) {
             e.printStackTrace();
             throw new LuckCatError("图片上传失败");
+        } finally {
+            try {
+                if (fileInputStream!=null){
+                    fileInputStream.close();
+                }
+            }catch (Exception e){
+                throw new LuckCatError("图片上传失败");
+            }
+
         }
         //获取文件地址
         String photourl;
@@ -132,7 +145,9 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     //下载图片
     @Override
     public void download(String filename, HttpServletResponse response){
-        GetObjectArgs objectArgs = GetObjectArgs.builder().bucket(minioInit.getBucketName()).object(filename).build();
+        String[] split = filename.split("-");
+        String filePath=Integer.parseInt(split[0])+"/"+Integer.parseInt(split[1])+"/"+Integer.parseInt(split[2])+"/"+filename;
+        GetObjectArgs objectArgs = GetObjectArgs.builder().bucket(minioInit.getBucketName()).object(filePath).build();
         try (GetObjectResponse res = minioInit.createMinio().getObject(objectArgs)){
             byte[] buf = new byte[1024];
             int len;

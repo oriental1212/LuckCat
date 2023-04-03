@@ -23,11 +23,11 @@ spring:
     # Redis数据库索引（默认为0）
     database: 1
     # Redis服务器地址
-    host: 127.0.0.1
+    host: 82.157.162.80
     # Redis服务器连接端口
     port: 6379
     # Redis服务器连接密码（默认为空）
-    # password:
+    password: 123456
     # 连接超时时间
     timeout: 10s
     lettuce:
@@ -92,5 +92,5 @@ sa-token:
 minio:
   username: admin
   key: 12345678
-  url: http://localhost:9000
+  url: http://82.157.162.80:9000
   buckName: photo
