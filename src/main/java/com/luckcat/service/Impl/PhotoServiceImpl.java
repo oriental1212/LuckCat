@@ -2,6 +2,7 @@ package com.luckcat.service.Impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FastByteArrayOutputStream;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -95,7 +96,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         }
         //获取文件地址
         String photourl;
-        GetPresignedObjectUrlArgs build = new GetPresignedObjectUrlArgs().builder().bucket(minioInit.getBucketName()).object(photoname).method(Method.GET).build();
+        GetPresignedObjectUrlArgs build = new GetPresignedObjectUrlArgs().builder().bucket(minioInit.getBucketName()).object(objectName).method(Method.GET).build();
         try {
             photourl = minioInit.createMinio().getPresignedObjectUrl(build);
         } catch (Exception e) {
@@ -119,7 +120,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     public LuckResult queryByUsername(PhotoPage photoPage) {
         //查询用户id
         QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper.eq("photo_name",photoPage.getUsername());
+        userQueryWrapper.eq("username",photoPage.getUsername());
         Long userid;
         try {
             userid = userMapper.selectOne(userQueryWrapper).getUid();
