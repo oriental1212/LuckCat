@@ -19,6 +19,9 @@ import com.luckcat.service.UserService;
 import com.luckcat.utils.IdWorker;
 import com.luckcat.utils.LuckResult;
 import com.luckcat.utils.sendMail;
+import com.luckcat.vo.UserSelect;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
@@ -145,4 +148,46 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return LuckResult.success("修改成功");
     }
+
+    //查询所有用户
+
+    @Override
+    public LuckResult findAllUser() {
+        if(StpUtil.hasRole("admin")){
+            return LuckResult.error("用户权限不合法");
+        }
+        UserSelect userSelect = new UserSelect();;
+        try {
+            QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+            userQueryWrapper.select("username","nickname","email","authority");
+            List<User> users = userMapper.selectList(userQueryWrapper);
+            BeanUtils.copyProperties(users,userSelect);
+        } catch (BeansException e) {
+            throw new RuntimeException("未查询成功，请重新查询");
+        }
+        return LuckResult.success(userSelect);
+    }
+
+    //禁用用户
+    public LuckResult disableUser(String username){
+        if(StpUtil.hasRole("admin")){
+            return LuckResult.error("用户权限不合法");
+        }
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.select("authority").eq("username",username);
+        User user = userMapper.selectOne(userQueryWrapper);
+        if(user.getAuthority().equals("admin")){
+            LuckResult.error("您无法对管理员用户禁用");
+        }
+        if(user.getAuthority().equals("disable")){
+            LuckResult.error("您无法对已禁用的用户继续禁用");
+        }
+        if(user.getAuthority().equals("user")){
+            UpdateWrapper<User> userUpdateWrapper = new UpdateWrapper<>();
+            userUpdateWrapper.eq("username",username).set("authority","disable");
+            return LuckResult.success("禁用成功，禁用的用户名为：" + username);
+        }
+        return LuckResult.error("禁用失败，原因可能是未查到用户，或者无法禁用，请重试");
+    }
+
 }

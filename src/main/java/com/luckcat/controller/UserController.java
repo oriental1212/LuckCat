@@ -5,12 +5,9 @@ package com.luckcat.controller;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.luckcat.config.Exception.LuckCatError;
 import com.luckcat.dto.UserLogin;
 import com.luckcat.dto.UserRegister;
-import com.luckcat.pojo.User;
 import com.luckcat.service.UserService;
 import com.luckcat.utils.LuckResult;
 import io.swagger.annotations.Api;
@@ -37,15 +34,26 @@ public class UserController  {
     private UserService userService;
 
     /**
-     * 分页查询所有数据
+     * 禁用用户接口
      *
-     * @param page 分页对象
-     * @param user 查询实体
+     * @param username 实体对象
+     * @return 登录结果
+     */
+    @ApiOperation("禁用用户接口")
+    @GetMapping("/disableUser/{username}")
+    public LuckResult disableUser(@RequestParam("username") String username){
+        return userService.disableUser(username);
+    }
+
+    /**
+     * 查询所有用户
+     *
      * @return 所有数据
      */
-    @GetMapping
-    public LuckResult selectAll(Page<User> page, User user) {
-        return success(this.userService.page(page, new QueryWrapper<>(user)));
+    @GetMapping("/findAllUser")
+    @ApiOperation("查询所有用户接口")
+    public LuckResult findAllUser() {
+        return userService.findAllUser();
     }
 
     /**

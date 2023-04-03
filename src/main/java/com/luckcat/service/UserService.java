@@ -12,4 +12,6 @@ public interface UserService extends IService<User> {
     SaResult LoginUser(UserLogin userLogin);
     LuckResult findPasswordMail(String email, String url);
     LuckResult updatePassword(String email,String password);
+    LuckResult findAllUser();
+    LuckResult disableUser(String username);
 }

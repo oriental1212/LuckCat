@@ -1,4 +1,4 @@
-package com.luckcat.config;
+package com.luckcat.config.satoken;
 
 import cn.dev33.satoken.jwt.StpLogicJwtForSimple;
 import cn.dev33.satoken.stp.StpLogic;
