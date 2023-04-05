@@ -21,8 +21,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
-import static com.luckcat.utils.LuckResult.error;
-import static com.luckcat.utils.LuckResult.success;
+import static com.luckcat.utils.LuckResult.*;
 
 /**
  * (Photo)表控制层
@@ -99,14 +98,15 @@ public class PhotoController  {
     }
 
     /**
-     * 修改数据
      *
-     * @param photo 实体对象
-     * @return 修改结果
+     * 查询图库图片总数
+     *
+     * @return 总数结果
      */
+    @ApiOperation("查询图库图片总数")
     @PutMapping
-    public LuckResult update(@RequestBody Photo photo) {
-        return success(this.photoService.updateById(photo));
+    public LuckResult findAllPhoto() {
+        return photoService.findAllPhoto();
     }
 
     /**

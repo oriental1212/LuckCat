@@ -73,7 +73,7 @@ server:
 #sa-token配置
 sa-token:
   # token名称 (同时也是cookie名称)
-  token-name: LcukCat
+  token-name: LuckCat
   # token有效期，单位s 默认30天, -1代表永不过期
   timeout: 604800
   # token临时有效期 (指定时间内无操作就视为token过期) 单位: 秒
@@ -86,6 +86,8 @@ sa-token:
   token-style: simple-uuid
   # 是否输出操作日志
   is-log: false
+  #是否尝试从 cookie 里读取 Token，False登录时也不会再往前端注入Cookie
+  isReadCookie: false
   # jwt秘钥
   jwt-secret-key: luckcatmingmingdongfang
 

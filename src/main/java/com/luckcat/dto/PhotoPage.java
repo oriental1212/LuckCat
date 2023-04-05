@@ -16,6 +16,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PhotoPage {
     private String username;
+    //图片标签
+    private String photoTag;
+    //图片创建时间
+    private String photoCreatTime;
     //页面大小
     private int size;
     //第几页

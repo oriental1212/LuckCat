@@ -1,8 +1,8 @@
 package com.luckcat.service.Impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FastByteArrayOutputStream;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -29,7 +29,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
@@ -115,19 +114,11 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         return LuckResult.success("文件上传成功");
     }
 
-    //获取单个用户的图片
+    //获取单个用户的所有图片
     @Override
     public LuckResult queryByUsername(PhotoPage photoPage) {
         //查询用户id
-        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper.eq("username",photoPage.getUsername());
-        Long userid;
-        try {
-            userid = userMapper.selectOne(userQueryWrapper).getUid();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            throw new LuckCatError("没有查询到用户id,用户未存在，或请重新查询");
-        }
+        Long userid = findUserIdByName(photoPage.getUsername());
         //查询图片
         try{
             QueryWrapper<Photo> photoQueryWrapper = new QueryWrapper<>();
@@ -171,5 +162,34 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             e.printStackTrace();
             throw new LuckCatError("下载失败");
         }
+    }
+
+    //查询所有的图片（admin）
+    @Override
+    public LuckResult findAllPhoto() {
+        if(StpUtil.hasRole("admin")){
+            return LuckResult.error("用户权限不合法");
+        }
+        QueryWrapper<Photo> photoQueryWrapper = new QueryWrapper<>();
+        Long count = photoMapper.selectCount(photoQueryWrapper);
+        if(!String.valueOf(count).equals("")){
+            return LuckResult.success(count);
+        }
+        return LuckResult.error("查询错误");
+    }
+
+    //查询用户id
+    private Long findUserIdByName(String username){
+        //查询用户id
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.eq("username",username);
+        Long userid;
+        try {
+            userid = userMapper.selectOne(userQueryWrapper).getUid();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            throw new LuckCatError("没有查询到用户id,用户未存在，或请重新查询");
+        }
+        return userid;
     }
 }

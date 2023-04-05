@@ -34,6 +34,22 @@ public class UserController  {
     private UserService userService;
 
     /**
+     * 登出用户接口
+     *
+     */
+    @ApiOperation("登出用户接口")
+    @GetMapping("/logout")
+    public LuckResult logout(){
+        try {
+            StpUtil.logout();
+        } catch (LuckCatError e) {
+            e.printStackTrace();
+            return LuckResult.error("登出失败，重新尝试");
+        }
+        return LuckResult.success("登出成功");
+    }
+
+    /**
      * 禁用用户接口
      *
      * @param username 实体对象
@@ -63,7 +79,7 @@ public class UserController  {
      * @return 登录结果
      */
     @ApiOperation("登录用户接口")
-    @GetMapping("/loginUser")
+    @PostMapping("/loginUser")
     public LuckResult login(@RequestBody UserLogin userLogin) {
         if(userLogin.getAccount() != null && userLogin.getPassword() != null){
             return info(userService.LoginUser(userLogin));
