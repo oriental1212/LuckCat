@@ -5,7 +5,6 @@ import cn.dev33.satoken.secure.BCrypt;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -27,6 +26,8 @@ import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Service
@@ -42,14 +43,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     //新增用户方法
     @Override
     @Transactional
-    public synchronized SaResult addUser(UserRegister userRegister) {
+    public synchronized SaResult register(UserRegister userRegister) {
         //校验该用户名或邮箱是否已经注册过
         LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
         userLambdaQueryWrapper.eq(User::getUsername,userRegister.getUsername())
                 .or()
                 .eq(User::getEmail,userRegister.getEmail());
         if (userMapper.exists(userLambdaQueryWrapper)) {
-            return SaResult.data("此用户已经注册，不可以重复注册哟");
+            return SaResult.error("此用户已经注册，不可以重复注册哟");
         }
         User newUser = new User();
         //为用户生成id
@@ -71,14 +72,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         newUser.setAuthority(authority);
         userMapper.insert(newUser);
         //设置用户登录
-        //先登录上
-        SaTokenInfo tokenInfo;
         try {
             StpUtil.login(userid);
+            ArrayList<Object> result = new ArrayList<>();
             //获取 Token  相关参数
-            tokenInfo = StpUtil.getTokenInfo();
+            result.add(StpUtil.getTokenInfo());
+            //获取用户信息
+            result.add(newUser);
             //返回前端
-            return SaResult.data(tokenInfo);
+            return SaResult.data(result);
         } catch (SaTokenException e) {
             throw new LuckCatError("系统错误，生成id为空，请重新注册");
         }
@@ -86,29 +88,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     //登录用户
     public SaResult LoginUser(UserLogin userLogin){
-        SaTokenInfo tokenInfo;
         //先通过用户名或者邮箱查询
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("username", userLogin.getAccount()).or().eq("email", userLogin.getAccount());
-        List<User> users = userMapper.selectList(wrapper);
+        User user = userMapper.selectOne(wrapper);
         //判断用户是否存在
-        if (users == null || users.size()==0) {
-            return SaResult.data("该账号不存在！");
+        if (user == null) {
+            return SaResult.error("该账号不存在！");
         }
-        //遍历判断
-        for (User user : users) {
-            if (BCrypt.checkpw(userLogin.getPassword(),user.getPassword())){
-                try {
-                    StpUtil.login(user.getUid());
-                    //获取 Token  相关参数
-                    tokenInfo = StpUtil.getTokenInfo();
-                    return SaResult.data(tokenInfo);
-                } catch (SaTokenException e) {
-                    throw new LuckCatError("系统错误，请重新登录");
-                }
+        //判断密码是否正确
+        if (BCrypt.checkpw(userLogin.getPassword(),user.getPassword())){
+            try {
+                StpUtil.login(user.getUid());
+                List<Object> result = new ArrayList<>();
+                //获取 Token  相关参数
+                result.add(StpUtil.getTokenInfo());
+                //获取用户信息
+                result.add(user);
+                return SaResult.data(result);
+            } catch (SaTokenException e) {
+                throw new LuckCatError("系统错误，请重新登录");
             }
         }
-        return SaResult.data("您的密码不正确哟！");
+        return SaResult.error("您的密码不正确哟！");
     }
 
 
