@@ -155,7 +155,7 @@ public class UserController  {
      */
     @ApiOperation("验证码校验接口")
     @GetMapping("/captchaCheck/{email}/{captcha}")
-    public LuckResult CaptchaCheck(@PathVariable("email") String email,@PathVariable("email") String captcha) {
+    public LuckResult CaptchaCheck(@PathVariable("email") String email,@PathVariable("captcha") String captcha) {
         String EmailMatch = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
         if(email.matches(EmailMatch)){
             return userService.CaptchaCheck(email,captcha);

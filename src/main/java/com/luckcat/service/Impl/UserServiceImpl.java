@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.luckcat.utils.CaptchaUtils.getCaptchaCode46;
 
@@ -134,9 +135,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         try {
             Integer captcha = getCaptchaCode46(6);
-            redisTemplate.opsForValue().set(email,captcha,150);
+            redisTemplate.opsForValue().set(email,captcha,5, TimeUnit.MINUTES);
             sendMail.sendTemplateMail(email, captcha);
-            return LuckResult.success(captcha);
+            return LuckResult.success("验证码发送成功,五分钟内有效！");
         }catch (MailException e) {
             e.printStackTrace();
             throw e;
