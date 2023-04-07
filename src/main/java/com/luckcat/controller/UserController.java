@@ -56,7 +56,7 @@ public class UserController  {
      * @return 登录结果
      */
     @ApiOperation("禁用用户接口")
-    @GetMapping("/disableUser/{username}")
+    @GetMapping("/disableUser")
     public LuckResult disableUser(@RequestParam("username") String username){
         return userService.disableUser(username);
     }
@@ -119,7 +119,7 @@ public class UserController  {
         if(tokenInfo.getIsLogin()){
             Map<String, Object> returnMap = new HashMap<>();
             try {
-                Long uid = (Long) tokenInfo.getLoginId();
+                long uid = Long.parseLong((String) tokenInfo.getLoginId());
                 StpUtil.logout(uid);
                 StpUtil.login(uid);
                 returnMap.put("msg","查询到用户已登录，token已更新");

@@ -33,7 +33,8 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                         "/user/loginUser",
                         "/user/registerUser",
                         "/user/updatePassword",
-                        "/user/findPasswordMail"
+                        "/user/findPasswordMail",
+                        "/user/isLoginUser"
                         )
                 .excludePathPatterns(
                         "/swagger-ui.html",
