@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserLogin {
     //账号：邮箱或者用户名
-    private String Account;
+    private String account;
     private String password;
 }

@@ -80,11 +80,11 @@ public class UserController  {
      */
     @ApiOperation("登录用户接口")
     @PostMapping("/loginUser")
-    public LuckResult login(@RequestBody UserLogin userLogin) {
+    public SaResult login(@RequestBody UserLogin userLogin) {
         if(userLogin.getAccount() != null && userLogin.getPassword() != null){
-            return info(userService.LoginUser(userLogin));
+            return userService.LoginUser(userLogin);
         }
-        return error("账号和密码不能为空的喔！");
+        return SaResult.error("账号和密码不能为空的喔！");
     }
 
     /**
@@ -95,16 +95,15 @@ public class UserController  {
      */
     @ApiOperation("新增用户接口")
     @PostMapping("/registerUser")
-    public LuckResult register(@RequestBody UserRegister userRegister) {
+    public SaResult register(@RequestBody UserRegister userRegister) {
         //邮箱的正则校验
         String EmailMatch = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
         if(userRegister.getEmail() != null && userRegister.getEmail().matches(EmailMatch)){
             if(userRegister.getPassword() != null && userRegister.getUsername() != null){
-                SaResult saResult = userService.addUser(userRegister);
-                return success(saResult);
+                return userService.register(userRegister);
             }
         }
-        return LuckResult.error("参数不合法，请重新传递");
+        return SaResult.error("参数不合法，请重新传递");
     }
 
     /**
@@ -119,11 +118,11 @@ public class UserController  {
         if(tokenInfo.getIsLogin()){
             Map<String, Object> returnMap = new HashMap<>();
             try {
-                long uid = Long.parseLong((String) tokenInfo.getLoginId());
+                Long uid = Long.parseLong((String) tokenInfo.getLoginId());
                 StpUtil.logout(uid);
                 StpUtil.login(uid);
-                returnMap.put("msg","查询到用户已登录，token已更新");
-                returnMap.put("newToken",StpUtil.getTokenInfo());
+                returnMap.put("info","查询到用户已登录，token已更新");
+                returnMap.put("tokenValue",StpUtil.getTokenInfo());
             } catch (LuckCatError e) {
                 throw new LuckCatError("更新token失败，重新请求更新");
             }
