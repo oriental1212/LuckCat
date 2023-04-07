@@ -135,31 +135,45 @@ public class UserController  {
     /**
      * 发送找回密码邮件接口
      *
-     * @param email,url 邮箱和找回密码的地址
+     * @param email 邮箱和找回密码的地址
      * @return 成功找到，且发送邮件
      */
     @ApiOperation("发送找回密码邮件接口")
-    @GetMapping("/findPasswordMail/{email}/{url}")
-    public LuckResult findPasswordMail(@PathVariable("email") String email,@PathVariable("url") String url) {
+    @GetMapping("/sendPasswordMail/{email}")
+    public LuckResult SendPasswordMail(@PathVariable("email") String email) {
         String EmailMatch = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
-        if(email.matches(EmailMatch) && !url.isEmpty()){
-            return userService.findPasswordMail(email,url);
+        if(email.matches(EmailMatch)){
+            return userService.SendPasswordMail(email);
         }
         return LuckResult.error("邮箱格式不对哟");
     }
 
     /**
-     * 找回密码接口
+     * 验证码校验接口
      *
-     * @param email,url 邮箱和找回密码的地址
-     * @return 成功找到，且发送邮件
+     * @param email,captcha 邮箱和验证码
      */
-    @ApiOperation("找回密码接口")
-    @GetMapping("/updatePassword/{email}/{password}")
-    public LuckResult updatePassword(@PathVariable("email") String email,@PathVariable("password") String password){
+    @ApiOperation("验证码校验接口")
+    @GetMapping("/captchaCheck/{email}/{captcha}")
+    public LuckResult CaptchaCheck(@PathVariable("email") String email,@PathVariable("email") String captcha) {
+        String EmailMatch = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
+        if(email.matches(EmailMatch)){
+            return userService.CaptchaCheck(email,captcha);
+        }
+        return LuckResult.error("邮箱格式不对哟");
+    }
+
+    /**
+     * 密码更改接口
+     *
+     * @param email,captcha,password 邮箱、校验码、密码
+     */
+    @ApiOperation("密码更改接口")
+    @GetMapping("/updatePassword/{email}/{captcha}/{password}")
+    public LuckResult updatePassword(@PathVariable("email") String email,@PathVariable("captcha") String captcha,@PathVariable("password") String password){
         String EmailMatch = "^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$";
         if(email.matches(EmailMatch) && !password.isEmpty()){
-            return userService.updatePassword(email,password);
+            return userService.updatePassword(email,captcha,password);
         }
         return LuckResult.error("邮箱格式不对哟");
     }
