@@ -10,8 +10,9 @@ import com.luckcat.utils.LuckResult;
 public interface UserService extends IService<User> {
     SaResult register(UserRegister userRegister);
     SaResult LoginUser(UserLogin userLogin);
-    LuckResult findPasswordMail(String email, String url);
-    LuckResult updatePassword(String email,String password);
+    LuckResult SendPasswordMail(String email);
+    LuckResult CaptchaCheck(String email, String captcha);
+    LuckResult updatePassword(String email,String captcha,String password);
     LuckResult findAllUser();
     LuckResult disableUser(String username);
 }

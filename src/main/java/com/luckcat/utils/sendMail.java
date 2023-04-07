@@ -34,19 +34,19 @@ public class sendMail {
     private String from;
 
 
-    public void sendTemplateMail(String email,String url) {
+    public void sendTemplateMail(String email,int captcha) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage,true);
             messageHelper.setFrom(from);// 发送人的邮箱
             messageHelper.setTo(email);//发给谁  对方邮箱
-            messageHelper.setSubject("找回邮箱"); //标题
+            messageHelper.setSubject("找回密码"); //标题
             //使用模板thymeleaf
             //Context是导这个包import org.thymeleaf.context.Context;
             Context context = new Context();
             Map<String, Object> map = new HashMap<>();
             map.put("from",from);
-            map.put("url",url);
+            map.put("captcha",captcha);
             //定义模板数据
             context.setVariables(map);
             //获取thymeleaf的html模板

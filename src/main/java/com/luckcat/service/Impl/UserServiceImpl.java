@@ -2,7 +2,6 @@ package com.luckcat.service.Impl;
 
 import cn.dev33.satoken.exception.SaTokenException;
 import cn.dev33.satoken.secure.BCrypt;
-import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -22,13 +21,15 @@ import com.luckcat.vo.UserSelect;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+
+import static com.luckcat.utils.CaptchaUtils.getCaptchaCode46;
 
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
@@ -39,6 +40,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Resource
     sendMail sendMail;
+
+    @Resource
+    RedisTemplate<String, Integer> redisTemplate;
 
     //新增用户方法
     @Override
@@ -78,6 +82,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             //获取 Token  相关参数
             result.add(StpUtil.getTokenInfo());
             //获取用户信息
+            newUser.setUid(null);
+            newUser.setPassword(null);
             result.add(newUser);
             //返回前端
             return SaResult.data(result);
@@ -104,6 +110,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 //获取 Token  相关参数
                 result.add(StpUtil.getTokenInfo());
                 //获取用户信息
+                user.setUid(null);
+                user.setPassword(null);
                 result.add(user);
                 return SaResult.data(result);
             } catch (SaTokenException e) {
@@ -117,7 +125,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     //找回密码邮件发送
 
     @Override
-    public LuckResult findPasswordMail(String email, String url) {
+    public LuckResult SendPasswordMail(String email) {
         //校验该邮箱是否已经存在
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("email", email);
@@ -125,30 +133,66 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return LuckResult.error("此用户不存在，请先注册哟");
         }
         try {
-            sendMail.sendTemplateMail(email,url);
+            Integer captcha = getCaptchaCode46(6);
+            redisTemplate.opsForValue().set(email,captcha,150);
+            sendMail.sendTemplateMail(email, captcha);
+            return LuckResult.success(captcha);
         }catch (MailException e) {
             e.printStackTrace();
             throw e;
         }
-        return LuckResult.success("发送成功");
+    }
+
+    @Override
+    public LuckResult CaptchaCheck(String email, String captcha) {
+        //校验该邮箱是否已经存在
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("email", email);
+        if(userMapper.selectOne(wrapper) == null){
+            return LuckResult.error("此用户不存在，请先注册哟");
+        }
+        //取出redis
+        Integer captchaCheck = redisTemplate.opsForValue().get(email);
+        if(captchaCheck == null){
+            return LuckResult.error("验证码超时，请重新验证");
+        }else if(captchaCheck == Integer.parseInt(captcha)){
+            return LuckResult.success("验证码校验成功");
+        }else {
+            return LuckResult.error("验证码错误，请输入正确验证码");
+        }
     }
 
     //找回密码功能
     @Transactional
     @Override
-    public LuckResult updatePassword(String email,String password){
-        try {
-            String newPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
-            User user = new User();
-            user.setPassword(newPassword);
-            UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
-            updateWrapper.eq("email", email);
-            userMapper.update(user, updateWrapper);
-        }catch (LuckCatError e){
-            e.printStackTrace();
-            throw new  LuckCatError("修改失败，请重新修改");
+    public LuckResult updatePassword(String email,String captcha,String password){
+        //校验该邮箱是否已经存在
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("email", email);
+        if(userMapper.selectOne(wrapper) == null){
+            return LuckResult.error("此用户不存在，请先注册哟");
         }
-        return LuckResult.success("修改成功");
+        //取出redis
+        Integer captchaCheck = redisTemplate.opsForValue().get(email);
+        if(captchaCheck == null){
+            return LuckResult.error("验证码超时，请重新验证");
+        }else if(captchaCheck == Integer.parseInt(captcha)){
+            //更新密码
+            try {
+                String newPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
+                User user = new User();
+                user.setPassword(newPassword);
+                UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("email", email);
+                userMapper.update(user, updateWrapper);
+            }catch (LuckCatError e){
+                e.printStackTrace();
+                throw new  LuckCatError("修改失败，请重试");
+            }
+            return LuckResult.success("修改成功");
+        }else {
+            return LuckResult.error("验证码错误，请输入正确验证码");
+        }
     }
 
     //查询所有用户
@@ -158,7 +202,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if(StpUtil.hasRole("admin")){
             return LuckResult.error("用户权限不合法");
         }
-        UserSelect userSelect = new UserSelect();;
+        UserSelect userSelect = new UserSelect();
         try {
             QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
             userQueryWrapper.select("username","nickname","email","authority");
