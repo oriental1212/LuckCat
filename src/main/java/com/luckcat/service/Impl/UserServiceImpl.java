@@ -12,12 +12,18 @@ import com.luckcat.config.Exception.LuckCatError;
 import com.luckcat.dao.UserMapper;
 import com.luckcat.dto.UserLogin;
 import com.luckcat.dto.UserRegister;
+import com.luckcat.dto.UserRevise;
 import com.luckcat.pojo.User;
 import com.luckcat.service.UserService;
 import com.luckcat.utils.IdWorker;
 import com.luckcat.utils.LuckResult;
+import com.luckcat.utils.MinioInit;
 import com.luckcat.utils.sendMail;
 import com.luckcat.vo.UserSelect;
+import io.minio.GetPresignedObjectUrlArgs;
+import io.minio.PutObjectArgs;
+import io.minio.errors.*;
+import io.minio.http.Method;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +31,13 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.annotation.Resource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -42,6 +54,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     sendMail sendMail;
 
+    @Resource
+    MinioInit minioInit;
     @Resource
     RedisTemplate<String, Integer> redisTemplate;
 
@@ -190,6 +204,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 e.printStackTrace();
                 throw new  LuckCatError("修改失败，请重试");
             }
+            redisTemplate.delete(email);
             return LuckResult.success("修改成功");
         }else {
             return LuckResult.error("验证码错误，请输入正确验证码");
@@ -200,7 +215,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public LuckResult findAllUser() {
-        if(StpUtil.hasRole("admin")){
+        if(!StpUtil.hasRole("admin")){
             return LuckResult.error("用户权限不合法");
         }
         UserSelect userSelect = new UserSelect();
@@ -238,4 +253,100 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return LuckResult.error("禁用失败，原因可能是未查到用户，或者无法禁用，请重试");
     }
 
+    //修改用户个人资料
+    @Override
+    @Transactional
+    public LuckResult PersonalRevise(UserRevise userRevise) {
+        //校验用户是否被禁用
+        if(!StpUtil.hasRole("user") || !StpUtil.hasRole("admin")){
+            return LuckResult.error("用户权限不合法");
+        }
+        try {
+            UpdateWrapper<User> userWrapper = new UpdateWrapper<>();
+            long userId = StpUtil.getLoginIdAsLong();
+            userWrapper.eq("uid",userId);
+            if(userRevise.getPassword() != null){
+                userWrapper.set("password",userRevise.getPassword());
+            }
+            if(userRevise.getEmail() != null){
+                userWrapper.set("email",userRevise.getEmail());
+            }
+            if(userRevise.getNickname() != null){
+                userWrapper.set("nickname",userRevise.getNickname());
+            }
+            userMapper.update(null,userWrapper);
+        } catch (LuckCatError e) {
+            e.printStackTrace();
+            LuckResult.error("更新失败，请重试");
+            throw e;
+        }
+        return LuckResult.success("你的资料更新成功");
+    }
+
+    //修改用户的图片
+    @Override
+    public LuckResult AvatarChange(MultipartFile file) {
+        //校验用户是否被禁用
+        if(!StpUtil.hasRole("user") || !StpUtil.hasRole("admin")){
+            return LuckResult.error("用户权限不合法");
+        }
+        String userId = StpUtil.getLoginIdAsString();
+        if(userId == null){
+            LuckResult.error("用户未登录");
+            throw new LuckCatError("用户未登录");
+        }
+        InputStream fileInputStream = null;
+        //上传头像
+        try {
+            fileInputStream = file.getInputStream();
+            PutObjectArgs build = PutObjectArgs.builder()
+                    .bucket(minioInit.getBuckNameOfAvatar())
+                    .object(userId)
+                    .stream(fileInputStream, file.getSize(), -1)
+                    .contentType(file.getContentType())
+                    .build();
+            minioInit.createMinio().putObject(build);
+        } catch (IOException e) {
+            LuckResult.error("文件流读取失败");
+            throw new LuckCatError("文件流读取失败");
+        } catch (ServerException | InsufficientDataException | ErrorResponseException | NoSuchAlgorithmException |
+                 InvalidKeyException | InvalidResponseException | XmlParserException | InternalException e) {
+            LuckResult.error("存入失败，重试");
+            throw new LuckCatError("存入失败，重试");
+        } finally {
+            try {
+                if (fileInputStream != null) {
+                    fileInputStream.close();
+                }
+            }catch (Exception e){
+                LuckResult.error("文件流关闭失败");
+                throw new LuckCatError("文件流关闭失败");
+            }
+        }
+        //获取头像地址
+        String photoUrl;
+        GetPresignedObjectUrlArgs build = GetPresignedObjectUrlArgs
+                .builder()
+                .bucket(minioInit.getBuckNameOfAvatar())
+                .object(userId)
+                .method(Method.GET)
+                .build();
+        try {
+            photoUrl = minioInit.createMinio().getPresignedObjectUrl(build);
+        } catch (ErrorResponseException | InsufficientDataException | InvalidKeyException | InvalidResponseException |
+                 IOException | NoSuchAlgorithmException | XmlParserException | ServerException | InternalException e) {
+            LuckResult.error("文件Url获取失败");
+            throw new LuckCatError("文件Url获取失败");
+        }
+        //修改数据库
+        try {
+            UpdateWrapper<User> userWrapper = new UpdateWrapper<>();
+            userWrapper.set("photo_url",photoUrl).eq("uid",StpUtil.getLoginIdAsLong());
+            userMapper.update(null,userWrapper);
+        } catch (Exception e) {
+            LuckResult.error("修改失败请重试");
+            throw new LuckCatError("修改失败请重试");
+        }
+        return LuckResult.success(photoUrl);
+    }
 }

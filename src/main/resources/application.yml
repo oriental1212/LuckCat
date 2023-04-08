@@ -95,4 +95,5 @@ minio:
   username: minioadmin
   key: minioadmin
   url: http://82.157.162.80:9000
-  buckName: photo
+  buckNameOfPhoto: photo
+  buckNameOfAvatar: avatar

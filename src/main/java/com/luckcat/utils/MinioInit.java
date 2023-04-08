@@ -29,8 +29,10 @@ public class MinioInit {
     private String key;
     @Value("${minio.url}")
     private String minioUrl;
-    @Value("${minio.buckName}")
-    private String bucketName;
+    @Value("${minio.buckNameOfPhoto}")
+    private String buckNameOfPhoto;
+    @Value("${minio.buckNameOfAvatar}")
+    private String buckNameOfAvatar;
 
     @Bean
     public MinioClient createMinio() throws ServerException, InsufficientDataException, ErrorResponseException, IOException, NoSuchAlgorithmException, InvalidKeyException, InvalidResponseException, XmlParserException, InternalException {
@@ -40,9 +42,13 @@ public class MinioInit {
                         // 用户名及密码（访问密钥/密钥）
                         .credentials(user, key)
                         .build();
-        boolean found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
-        if(!found){
-            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+        boolean foundPhoto = minioClient.bucketExists(BucketExistsArgs.builder().bucket(buckNameOfPhoto).build());
+        boolean foundAvatar = minioClient.bucketExists(BucketExistsArgs.builder().bucket(buckNameOfAvatar).build());
+        if(!foundPhoto){
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(buckNameOfPhoto).build());
+        }
+        if(!foundAvatar){
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(buckNameOfAvatar).build());
         }
         return minioClient;
     }

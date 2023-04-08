@@ -8,11 +8,13 @@ import cn.dev33.satoken.util.SaResult;
 import com.luckcat.config.Exception.LuckCatError;
 import com.luckcat.dto.UserLogin;
 import com.luckcat.dto.UserRegister;
+import com.luckcat.dto.UserRevise;
 import com.luckcat.service.UserService;
 import com.luckcat.utils.LuckResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -176,6 +178,35 @@ public class UserController  {
             return userService.updatePassword(email,captcha,password);
         }
         return LuckResult.error("邮箱格式不对哟");
+    }
+
+    /**
+     * 个人资料修改
+     *
+     * @param  userRevise 用户更改实体类
+     */
+    @ApiOperation("个人资料修改")
+    @PostMapping("/personalRevise")
+    public LuckResult PersonalRevise (@RequestBody UserRevise userRevise){
+        if((userRevise.getPassword() != null) || (userRevise.getEmail() != null) || (userRevise.getNickname() != null)){
+            return userService.PersonalRevise(userRevise);
+        }
+        return LuckResult.error("没有需要修改的数据哟");
+    }
+
+    /**
+     * 头像修改
+     *
+     * @param file 用户更改实体类
+     * @return 返回用户的头像地址
+     */
+    @ApiOperation("头像修改")
+    @PostMapping("/avatarChange")
+    public LuckResult AvatarChange (@RequestBody MultipartFile file){
+        if(file.getSize() != 0){
+            return userService.AvatarChange(file);
+        }
+        return LuckResult.error("您传入的图片为空，请重试");
     }
 
 }

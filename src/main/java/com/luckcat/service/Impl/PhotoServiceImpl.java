@@ -76,8 +76,12 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         String objectName = DateUtil.year(date) + "/" + (DateUtil.month(date) + 1) + "/" + DateUtil.dayOfMonth(date) + "/" + photoname;
         try {
             fileInputStream = file.getInputStream();
-            PutObjectArgs objectArgs = PutObjectArgs.builder().bucket(minioInit.getBucketName()).object(objectName)
-                    .stream(fileInputStream, file.getSize(), -1).contentType(file.getContentType()).build();
+            PutObjectArgs objectArgs = PutObjectArgs.builder()
+                    .bucket(minioInit.getBuckNameOfPhoto())
+                    .object(objectName)
+                    .stream(fileInputStream, file.getSize(), -1)
+                    .contentType(file.getContentType())
+                    .build();
             //文件名称相同会覆盖
             minioInit.createMinio().putObject(objectArgs);
         } catch (Exception e) {
@@ -89,13 +93,18 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                     fileInputStream.close();
                 }
             }catch (Exception e){
-                throw new LuckCatError("图片上传失败");
+                throw new LuckCatError("文件流关闭失败");
             }
 
         }
         //获取文件地址
         String photourl;
-        GetPresignedObjectUrlArgs build = new GetPresignedObjectUrlArgs().builder().bucket(minioInit.getBucketName()).object(objectName).method(Method.GET).build();
+        GetPresignedObjectUrlArgs build = GetPresignedObjectUrlArgs
+                .builder()
+                .bucket(minioInit.getBuckNameOfPhoto())
+                .object(objectName)
+                .method(Method.GET)
+                .build();
         try {
             photourl = minioInit.createMinio().getPresignedObjectUrl(build);
         } catch (Exception e) {
@@ -139,7 +148,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     public void download(String filename, HttpServletResponse response){
         String[] split = filename.split("-");
         String filePath=Integer.parseInt(split[0])+"/"+Integer.parseInt(split[1])+"/"+Integer.parseInt(split[2])+"/"+filename;
-        GetObjectArgs objectArgs = GetObjectArgs.builder().bucket(minioInit.getBucketName()).object(filePath).build();
+        GetObjectArgs objectArgs = GetObjectArgs.builder().bucket(minioInit.getBuckNameOfPhoto()).object(filePath).build();
         try (GetObjectResponse res = minioInit.createMinio().getObject(objectArgs)){
             byte[] buf = new byte[1024];
             int len;

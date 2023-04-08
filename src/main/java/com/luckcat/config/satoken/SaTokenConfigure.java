@@ -7,9 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import cn.dev33.satoken.interceptor.SaInterceptor;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -25,6 +22,7 @@ public class SaTokenConfigure implements WebMvcConfigurer {
         registry.addInterceptor(new SaInterceptor(handler -> {
                     // 登录认证 -- 拦截所有路由，并判断是否登录
                     SaRouter.match("/**",r -> StpUtil.checkLogin());
+                    SaRouter.match("/photo/**", r -> StpUtil.checkRoleOr("admin", "user"));
                 }).isAnnotation(true))
                 //拦截所有接口
                 .addPathPatterns("/**")

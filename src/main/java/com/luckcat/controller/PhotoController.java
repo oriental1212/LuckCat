@@ -1,11 +1,7 @@
 package com.luckcat.controller;
 
-import cn.hutool.core.io.FileTypeUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.luckcat.dto.PhotoAdd;
 import com.luckcat.dto.PhotoPage;
-import com.luckcat.pojo.Photo;
 import com.luckcat.service.PhotoService;
 import com.luckcat.utils.LuckResult;
 import com.luckcat.utils.PhotoUtils;
@@ -17,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
 
@@ -86,10 +81,6 @@ public class PhotoController  {
                              @RequestParam("photoTag") String photoTag,
                              @RequestParam("userName") String userName) {
         for (Object type : photoUtils.AllPhotoType()) {
-//            if(FileTypeUtil.getType(file.getOriginalFilename()).equals(type)){
-//                log.info("file:{}",file.toString(),"photoAdd:{}",photoAdd);
-//                return photoService.upload(file,photoAdd);
-//            }
             if (Objects.equals(file.getContentType(), type)) {
                 return photoService.upload(file,new PhotoAdd(userName,photoTag));
             }
