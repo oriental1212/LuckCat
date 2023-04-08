@@ -209,5 +209,19 @@ public class UserController  {
         return LuckResult.error("您传入的图片为空，请重试");
     }
 
+    /**
+     * 判断用户是否存在
+     * @param account
+     * @return
+     */
+    @ApiOperation("判断用户名是否存在")
+    @GetMapping("/exist/{account}")
+    public LuckResult isExist(@PathVariable("account") String account){
+        if (account != null && !account.equals("")) {
+            return userService.isExist(account);
+        }
+        return LuckResult.error("信息错误,不能为空");
+    }
+
 }
 

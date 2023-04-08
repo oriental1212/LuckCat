@@ -32,7 +32,8 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                         "/user/registerUser",
                         "/user/sendPasswordMail/{email}",
                         "/user/captchaCheck/{email}/{captcha}",
-                        "/user/updatePassword/{email}/{captcha}/{password}"
+                        "/user/updatePassword/{email}/{captcha}/{password}",
+                        "/user/exist/*"
                         )
                 .excludePathPatterns(
                         "/swagger-ui.html",

@@ -349,4 +349,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return LuckResult.success(photoUrl);
     }
+    //判断用户是否存在
+    @Override
+    public LuckResult isExist(String account) {
+        LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        userLambdaQueryWrapper
+                .eq(User::getUsername,account)
+                .or()
+                .eq(User::getEmail,account);
+        boolean exists = userMapper.exists(userLambdaQueryWrapper);
+        return exists?LuckResult.success("欢迎回来"):LuckResult.error("该用户不存在,请先注册");
+    }
+
 }

@@ -19,4 +19,5 @@ public interface UserService extends IService<User> {
     LuckResult disableUser(String username);
     LuckResult PersonalRevise(UserRevise userRevise);
     LuckResult AvatarChange(MultipartFile file);
+    LuckResult isExist(String account);
 }
