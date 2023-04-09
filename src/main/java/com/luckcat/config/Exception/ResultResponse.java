@@ -11,19 +11,19 @@ public class ResultResponse {
     /**
      * 响应消息
      */
-    private String message;
+    private String msg;
 
     /**
      * 响应结果
      */
-    private Object result;
+    private Object data;
 
     public ResultResponse() {
     }
 
     public ResultResponse(BaseErrorInfoInterface errorInfo) {
         this.code = errorInfo.getResultCode();
-        this.message = errorInfo.getResultMsg();
+        this.msg = errorInfo.getResultMsg();
     }
 
     public String getCode() {
@@ -34,20 +34,20 @@ public class ResultResponse {
         this.code = code;
     }
 
-    public String getMessage() {
-        return message;
+    public String getMsg() {
+        return msg;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
-    public Object getResult() {
-        return result;
+    public Object getData() {
+        return data;
     }
 
-    public void setResult(Object result) {
-        this.result = result;
+    public void setData(Object data) {
+        this.data = data;
     }
 
     /**
@@ -67,8 +67,8 @@ public class ResultResponse {
     public static ResultResponse success(Object data) {
         ResultResponse rb = new ResultResponse();
         rb.setCode(ExceptionEnum.SUCCESS.getResultCode());
-        rb.setMessage(ExceptionEnum.SUCCESS.getResultMsg());
-        rb.setResult(data);
+        rb.setMsg(ExceptionEnum.SUCCESS.getResultMsg());
+        rb.setData(data);
         return rb;
     }
 
@@ -78,8 +78,8 @@ public class ResultResponse {
     public static ResultResponse error(BaseErrorInfoInterface errorInfo) {
         ResultResponse rb = new ResultResponse();
         rb.setCode(errorInfo.getResultCode());
-        rb.setMessage(errorInfo.getResultMsg());
-        rb.setResult(null);
+        rb.setMsg(errorInfo.getResultMsg());
+        rb.setData(null);
         return rb;
     }
 
@@ -89,8 +89,8 @@ public class ResultResponse {
     public static ResultResponse error(String code, String message) {
         ResultResponse rb = new ResultResponse();
         rb.setCode(code);
-        rb.setMessage(message);
-        rb.setResult(null);
+        rb.setMsg(message);
+        rb.setData(null);
         return rb;
     }
 
@@ -100,8 +100,8 @@ public class ResultResponse {
     public static ResultResponse error( String message) {
         ResultResponse rb = new ResultResponse();
         rb.setCode("-1");
-        rb.setMessage(message);
-        rb.setResult(null);
+        rb.setMsg(message);
+        rb.setData(null);
         return rb;
     }
 

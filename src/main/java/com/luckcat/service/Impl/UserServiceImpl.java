@@ -7,6 +7,7 @@ import cn.dev33.satoken.util.SaResult;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.luckcat.config.Exception.LuckCatError;
 import com.luckcat.dao.UserMapper;
@@ -19,12 +20,10 @@ import com.luckcat.utils.IdWorker;
 import com.luckcat.utils.LuckResult;
 import com.luckcat.utils.MinioInit;
 import com.luckcat.utils.sendMail;
-import com.luckcat.vo.UserSelect;
 import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.PutObjectArgs;
 import io.minio.errors.*;
 import io.minio.http.Method;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -214,20 +213,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     //查询所有用户
 
     @Override
-    public LuckResult findAllUser() {
+    public LuckResult findAllUser(Integer currentPage,Integer pageSize) {
         if(!StpUtil.hasRole("admin")){
             return LuckResult.error("用户权限不合法");
         }
-        UserSelect userSelect = new UserSelect();
+        Page<User> userPage1;
         try {
+            //分页构造器
+            Page<User> userPage = new Page<>(currentPage, pageSize);
             QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
             userQueryWrapper.select("username","nickname","email","authority");
-            List<User> users = userMapper.selectList(userQueryWrapper);
-            BeanUtils.copyProperties(users,userSelect);
+            userPage1 = userMapper.selectPage(userPage, userQueryWrapper);
         } catch (BeansException e) {
             throw new RuntimeException("未查询成功，请重新查询");
         }
-        return LuckResult.success(userSelect);
+        return LuckResult.success(userPage1);
     }
 
     //禁用用户

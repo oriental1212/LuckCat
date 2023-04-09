@@ -70,8 +70,10 @@ public class UserController  {
      */
     @GetMapping("/findAllUser")
     @ApiOperation("查询所有用户接口")
-    public LuckResult findAllUser() {
-        return userService.findAllUser();
+    public LuckResult findAllUser(@RequestParam("currentPage") Integer currentPage,
+                                  @RequestParam("pageSize") Integer pageSize
+                                  ) {
+        return userService.findAllUser(currentPage, pageSize);
     }
 
     /**

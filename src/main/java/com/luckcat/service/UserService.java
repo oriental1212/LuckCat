@@ -15,7 +15,7 @@ public interface UserService extends IService<User> {
     LuckResult SendPasswordMail(String email);
     LuckResult CaptchaCheck(String email, String captcha);
     LuckResult updatePassword(String email,String captcha,String password);
-    LuckResult findAllUser();
+    LuckResult findAllUser(Integer currentPage,Integer pageSize);
     LuckResult disableUser(String username);
     LuckResult PersonalRevise(UserRevise userRevise);
     LuckResult AvatarChange(MultipartFile file);

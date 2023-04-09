@@ -9,6 +9,7 @@ import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 
@@ -42,7 +43,18 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                         "/v2/api-docs",
                         "/v3/api-docs",
                         "/webjars/**"
+                )
+                .excludePathPatterns(
+                        "/static/**"
                 );
+
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/static/**")
+                .addResourceLocations("classpath:/static/");
+        WebMvcConfigurer.super.addResourceHandlers(registry);
     }
 
     // Sa-Token 整合 jwt (Simple 简单模式)
