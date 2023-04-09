@@ -75,7 +75,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         long userid = new IdWorker(0, 0).nextId();
         //nickname默认为username
         //头像为默认头像
-        String avatarAddress = "127.0.0.1:" + serverPort + "/default.jpg";
+        String avatarAddress = "http://127.0.0.1:" + serverPort + "/default.jpg";
         //设置默认权限
         String authority = "user";
         //加密密码
@@ -96,9 +96,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             //获取 Token  相关参数
             result.add(StpUtil.getTokenInfo());
             //获取用户信息
-            newUser.setUid(null);
-            newUser.setPassword(null);
-            result.add(newUser);
+            QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+            userQueryWrapper.eq("uid",userid)
+                    .select("username","email","nickname","avatar_address");
+            User user = userMapper.selectOne(userQueryWrapper);
+            result.add(user);
             //返回前端
             return SaResult.data(result);
         } catch (SaTokenException e) {
@@ -124,9 +126,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 //获取 Token  相关参数
                 result.add(StpUtil.getTokenInfo());
                 //获取用户信息
-                user.setUid(null);
-                user.setPassword(null);
-                result.add(user);
+                wrapper.select("username","email","nickname","avatar_address");
+                User newuser = userMapper.selectOne(wrapper);
+                result.add(newuser);
                 return SaResult.data(result);
             } catch (SaTokenException e) {
                 throw new LuckCatError("系统错误，请重新登录");
@@ -258,7 +260,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Transactional
     public LuckResult PersonalRevise(UserRevise userRevise) {
         //校验用户是否被禁用
-        if(!StpUtil.hasRole("user") || !StpUtil.hasRole("admin")){
+        if(StpUtil.hasRole("disable")){
             return LuckResult.error("用户权限不合法");
         }
         try {
@@ -287,7 +289,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public LuckResult AvatarChange(MultipartFile file) {
         //校验用户是否被禁用
-        if(!StpUtil.hasRole("user") || !StpUtil.hasRole("admin")){
+        if(StpUtil.hasRole("disable")){
             return LuckResult.error("用户权限不合法");
         }
         String userId = StpUtil.getLoginIdAsString();
@@ -340,9 +342,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         //修改数据库
         try {
+            User user = new User();
+            user.setAvatarAddress(photoUrl);
             UpdateWrapper<User> userWrapper = new UpdateWrapper<>();
-            userWrapper.set("photo_url",photoUrl).eq("uid",StpUtil.getLoginIdAsLong());
-            userMapper.update(null,userWrapper);
+            userWrapper.eq("uid",StpUtil.getLoginIdAsLong());
+            userMapper.update(user,userWrapper);
         } catch (Exception e) {
             LuckResult.error("修改失败请重试");
             throw new LuckCatError("修改失败请重试");

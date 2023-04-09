@@ -5,10 +5,12 @@ package com.luckcat.controller;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.luckcat.config.Exception.LuckCatError;
 import com.luckcat.dto.UserLogin;
 import com.luckcat.dto.UserRegister;
 import com.luckcat.dto.UserRevise;
+import com.luckcat.pojo.User;
 import com.luckcat.service.UserService;
 import com.luckcat.utils.LuckResult;
 import io.swagger.annotations.Api;
@@ -111,13 +113,13 @@ public class UserController  {
     }
 
     /**
-     * 查询用户在线接口
+     * 用户续费token
      *
      * @return 登录状态结果
      */
     @ApiOperation("查询用户在线接口")
-    @GetMapping("/isLoginUser")
-    public LuckResult isLogin() {
+    @GetMapping("/renewalToken")
+    public LuckResult RenewalToken() {
         SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
         if(tokenInfo.getIsLogin()){
             Map<String, Object> returnMap = new HashMap<>();
@@ -223,6 +225,25 @@ public class UserController  {
             return userService.isExist(account);
         }
         return LuckResult.error("信息错误,不能为空");
+    }
+
+    /**
+     * 判断用户是否存在
+     * @return userinfo
+     */
+    @ApiOperation("获取用户信息")
+    @GetMapping("/getPersonalInfo")
+    public LuckResult GetPersonalInfo(){
+        long uid = StpUtil.getLoginIdAsLong();
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.eq("uid",uid)
+                .select("username","email","nickname","avatar_address");
+        User personal =  userService.getOne(userQueryWrapper);
+        if(personal != null){
+            return LuckResult.success(personal);
+        }else {
+            return LuckResult.error("查询失败");
+        }
     }
 
 }

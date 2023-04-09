@@ -50,6 +50,10 @@ public class StpInterfaceImpl implements StpInterface {
             list.add("user");
             return list;
         }
+        if(getAuthority(o).equals("disable")){
+            list.add("disable");
+            return list;
+        }
         return null;
     }
 }
