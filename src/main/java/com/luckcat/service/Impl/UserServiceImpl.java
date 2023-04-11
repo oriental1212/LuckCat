@@ -267,9 +267,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             UpdateWrapper<User> userWrapper = new UpdateWrapper<>();
             long userId = StpUtil.getLoginIdAsLong();
             userWrapper.eq("uid",userId);
-            if(userRevise.getPassword() != null){
-                userWrapper.set("password",userRevise.getPassword());
-            }
             if(userRevise.getEmail() != null){
                 userWrapper.set("email",userRevise.getEmail());
             }

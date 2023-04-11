@@ -5,7 +5,6 @@ import com.luckcat.dto.PhotoAdd;
 import com.luckcat.dto.PhotoPage;
 import com.luckcat.pojo.Photo;
 import com.luckcat.utils.LuckResult;
-import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;

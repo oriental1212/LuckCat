@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserRevise {
-    private String password;
     private String email;
     private String nickname;
 }

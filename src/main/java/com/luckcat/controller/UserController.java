@@ -192,7 +192,7 @@ public class UserController  {
     @ApiOperation("个人资料修改")
     @PostMapping("/personalRevise")
     public LuckResult PersonalRevise (@RequestBody UserRevise userRevise){
-        if((userRevise.getPassword() != null) || (userRevise.getEmail() != null) || (userRevise.getNickname() != null)){
+        if((userRevise.getEmail() != null) || (userRevise.getNickname() != null)){
             return userService.PersonalRevise(userRevise);
         }
         return LuckResult.error("没有需要修改的数据哟");
