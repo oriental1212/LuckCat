@@ -6,7 +6,7 @@ public class LuckCatError extends RuntimeException{
     /**
      * 错误码
      */
-    protected String errorCode;
+    protected String errorCode="500";
     /**
      * 错误信息
      */

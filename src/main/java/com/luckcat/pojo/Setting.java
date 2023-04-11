@@ -1,5 +1,6 @@
 package com.luckcat.pojo;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -20,8 +21,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @TableName("setting")
 public class Setting {
-    @TableId
-    @TableField("setting_id")
+    @TableId(value = "setting_id",type = IdType.AUTO)
     private Integer settingId;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     @TableField("user_id")

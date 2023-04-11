@@ -2,6 +2,7 @@ package com.luckcat.service.Impl;
 
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -36,10 +37,10 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting> impl
             flag = settingMapper.selectOne(settingQueryWrapper);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new LuckCatError("总体用户设置查询失败");
+            throw new LuckCatError("500","总体用户设置查询失败");
         }
-        //存在
-        if(flag != null){
+        //不存在
+        if(flag == null){
             try {
                 Setting newSetting = new Setting();
                 newSetting.setUserId(1L);
@@ -49,10 +50,10 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting> impl
                 settingMapper.insert(newSetting);
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new LuckCatError("插入总体设置失败");
+                throw new LuckCatError("500","插入总体设置失败");
             }
             return LuckResult.success("插入总体设置成功");
-        //不存在
+        //存在
         }else {
             try {
                 UpdateWrapper<Setting> settingUpdateWrapper = new UpdateWrapper<>();
@@ -63,7 +64,7 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting> impl
                 settingMapper.update(null,settingUpdateWrapper);
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new LuckCatError("更新总体设置失败");
+                throw new LuckCatError("500","更新总体设置失败");
             }
             return LuckResult.success("更新总体设置成功");
         }
@@ -85,8 +86,8 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting> impl
             e.printStackTrace();
             throw new LuckCatError("总体用户设置查询失败");
         }
-        //存在
-        if(flag != null){
+        //不存在
+        if(flag == null){
             try {
                 Setting newSetting = new Setting();
                 newSetting.setUserId(StpUtil.getLoginIdAsLong());
@@ -99,8 +100,8 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting> impl
                 throw new LuckCatError("插入单个用户设置失败");
             }
             return LuckResult.success("插入单个用户设置失败");
-            //不存在
         }else {
+        //存在
             try {
                 UpdateWrapper<Setting> settingUpdateWrapper = new UpdateWrapper<>();
                 settingUpdateWrapper.eq("user_id",StpUtil.getLoginIdAsLong());
@@ -114,5 +115,16 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting> impl
             }
             return LuckResult.success("更新单个用户设置失败");
         }
+    }
+
+    /**
+     * 获取设置数据
+     * @return
+     */
+    @Override
+    public LuckResult getSetting() {
+        long uid = StpUtil.getLoginIdAsLong();
+        Setting setting = settingMapper.selectOne(new LambdaQueryWrapper<Setting>().eq(Setting::getUserId, 1));
+        return setting!=null?LuckResult.success(setting):LuckResult.error("设置数据获取失败");
     }
 }

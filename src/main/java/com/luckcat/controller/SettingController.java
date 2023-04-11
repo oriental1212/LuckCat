@@ -1,5 +1,6 @@
 package com.luckcat.controller;
 
+import cn.dev33.satoken.stp.StpUtil;
 import com.luckcat.dto.SettingRevise;
 import com.luckcat.service.SettingService;
 import com.luckcat.utils.LuckResult;
@@ -40,7 +41,7 @@ public class SettingController {
         if(settingRevise.getStorageSpace() == null || settingRevise.getStorageSize() == null ||settingRevise.getStorageQuantity() == null){
             return LuckResult.error("参数为空");
         }
-        if(Integer.parseInt(settingRevise.getStorageSpace())<(Integer.parseInt(settingRevise.getStorageSize()) * Integer.parseInt(settingRevise.getStorageQuantity()))){
+        if(Integer.parseInt(settingRevise.getStorageSpace())>(Integer.parseInt(settingRevise.getStorageSize()) * Integer.parseInt(settingRevise.getStorageQuantity()))){
             return settingService.ReviseUserSetting(settingRevise);
         }else {
             return LuckResult.error("参数有误，请重新传递");
@@ -53,7 +54,7 @@ public class SettingController {
      * @param settingRevise 用户设置
      * @return success
      */
-    @ApiOperation("总体用户修改设置")
+    @ApiOperation("单个用户修改设置")
     @PostMapping("/reviseUserSettingOne")
     public LuckResult ReviseUserSettingOne(@RequestBody SettingRevise settingRevise){
         //判断图片的数量和每个图片大小相乘是不是大于了总容量
@@ -65,5 +66,15 @@ public class SettingController {
         }else {
             return LuckResult.error("参数有误，请重新传递");
         }
+    }
+
+    /**
+     * 获取用户设置数据
+     * @return
+     */
+    @ApiOperation("获取用户设置数据")
+    @PostMapping("getSetting")
+    public LuckResult getSetting(){
+        return settingService.getSetting();
     }
 }

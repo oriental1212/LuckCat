@@ -8,4 +8,5 @@ import com.luckcat.utils.LuckResult;
 public interface SettingService extends IService<Setting> {
     LuckResult ReviseUserSetting(SettingRevise settingRevise);
     LuckResult ReviseUserSettingOne(SettingRevise settingRevise);
+    LuckResult getSetting();
 }
