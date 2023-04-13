@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -38,10 +39,27 @@ public class GlobalExceptionHandler {
         logger.error("发生空指针异常！原因是:",e);
         return ResultResponse.error(ExceptionEnum.BODY_NOT_MATCH);
     }
+
+    /**
+     * 处理未登录造成的异常
+     * @param e
+     * @return
+     */
     @ExceptionHandler(value = NotLoginException.class)
     public ResultResponse exceptionHandler(NotLoginException e){
         logger.error("未登录异常:{}",e.getMessage());
         return ResultResponse.error(ExceptionEnum.NOT_LOGIN);
+    }
+
+    /**
+     * 处理上传文件超出最大值异常
+     * @param e
+     * @return
+     */
+    @ExceptionHandler(value = MaxUploadSizeExceededException.class)
+    public ResultResponse exceptionHandler(MaxUploadSizeExceededException e){
+        logger.error("上传文件超出最大值异常:{}",e.getMessage());
+        return ResultResponse.error(ExceptionEnum.FILE_TOO_LARGE);
     }
 
     /**

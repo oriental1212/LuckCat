@@ -2,6 +2,7 @@ package com.luckcat.controller;
 
 import com.luckcat.dto.PhotoAdd;
 import com.luckcat.dto.PhotoPage;
+import com.luckcat.pojo.Photo;
 import com.luckcat.service.PhotoService;
 import com.luckcat.utils.LuckResult;
 import com.luckcat.utils.PhotoUtils;
@@ -110,5 +111,15 @@ public class PhotoController  {
     public LuckResult delete(@RequestParam("idList") List<Long> idList) {
         return success(this.photoService.removeByIds(idList));
     }
+
+    @ApiOperation("修改图片标签")
+    @PutMapping("/modifyLabel")
+    public LuckResult modifyLabel(@RequestBody Photo photo){
+        if (photo.getId() != null && photo.getUserId()!=null && photo.getPhotoTag()!=null) {
+            return photoService.modifyLabel(photo);
+        }
+        return LuckResult.error("修改信息错误");
+    }
+
 }
 

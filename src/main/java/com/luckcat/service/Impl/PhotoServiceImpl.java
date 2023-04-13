@@ -3,6 +3,7 @@ package com.luckcat.service.Impl;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FastByteArrayOutputStream;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -200,5 +201,31 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             throw new LuckCatError("没有查询到用户id,用户未存在，或请重新查询");
         }
         return userid;
+    }
+
+    /**
+     * 修改图片标签
+     * @param photo
+     * @return
+     */
+    @Override
+    @Transactional
+    public LuckResult modifyLabel(Photo photo) {
+        //条件构造器
+        LambdaQueryWrapper<Photo> photoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        photoLambdaQueryWrapper
+                .eq(Photo::getId,photo.getId())
+                .eq(Photo::getUserId,photo.getUserId());
+        try {
+            //判断信息是否有效
+            boolean exists = photoMapper.exists(photoLambdaQueryWrapper);
+            if (!exists) {
+                return LuckResult.error("修改失败！信息不正确");
+            }
+            int update = photoMapper.update(photo, photoLambdaQueryWrapper);
+            return update>0?LuckResult.success("修改成功"):LuckResult.error("修改失败,请稍后再试！");
+        }catch (Exception e){
+            throw new LuckCatError("修改失败,请稍后再试！");
+        }
     }
 }

@@ -14,4 +14,6 @@ public interface PhotoService extends IService<Photo> {
     LuckResult queryByUsername(PhotoPage photoPage);
     void download(String filename, HttpServletResponse response);
     LuckResult findAllPhoto();
+
+    LuckResult modifyLabel(Photo photo);
 }

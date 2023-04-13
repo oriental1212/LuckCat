@@ -5,6 +5,7 @@ public enum ExceptionEnum implements BaseErrorInfoInterface{
     // 数据操作错误定义
     SUCCESS("200", "成功!"),
     BODY_NOT_MATCH("400","请求的数据格式不符!"),
+    FILE_TOO_LARGE("413","上传文件太大"),
     SIGNATURE_NOT_MATCH("401","请求的数字签名不匹配!"),
     NOT_LOGIN("401","未登录，请先登录!"),
     NOT_FOUND("404", "未找到该资源!"),
