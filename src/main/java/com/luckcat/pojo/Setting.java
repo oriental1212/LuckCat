@@ -32,4 +32,6 @@ public class Setting {
     private String storageSize;
     @TableField("storage_quantity")
     private String storageQuantity;
+    @TableField("storage_used")
+    private String storageUsed;
 }

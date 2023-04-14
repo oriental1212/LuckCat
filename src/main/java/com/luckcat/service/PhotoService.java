@@ -2,6 +2,7 @@ package com.luckcat.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.luckcat.dto.PhotoAdd;
+import com.luckcat.dto.PhotoFont;
 import com.luckcat.dto.PhotoPage;
 import com.luckcat.pojo.Photo;
 import com.luckcat.utils.LuckResult;
@@ -14,6 +15,6 @@ public interface PhotoService extends IService<Photo> {
     LuckResult queryByUsername(PhotoPage photoPage);
     void download(String filename, HttpServletResponse response);
     LuckResult findAllPhoto();
-
-    LuckResult modifyLabel(Photo photo);
+    LuckResult PhotoLove(PhotoFont photoFont);
+    LuckResult modifyLabel(PhotoFont photoFont);
 }

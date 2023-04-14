@@ -5,17 +5,23 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FastByteArrayOutputStream;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.luckcat.config.Exception.LuckCatError;
 import com.luckcat.dao.PhotoMapper;
+import com.luckcat.dao.SettingMapper;
 import com.luckcat.dao.UserMapper;
 import com.luckcat.dto.PhotoAdd;
+import com.luckcat.dto.PhotoFont;
 import com.luckcat.dto.PhotoPage;
 import com.luckcat.pojo.Photo;
+import com.luckcat.pojo.Setting;
 import com.luckcat.pojo.User;
 import com.luckcat.service.PhotoService;
+import com.luckcat.utils.FormatSize;
 import com.luckcat.utils.LuckResult;
 import com.luckcat.utils.MinioInit;
 import io.minio.GetObjectArgs;
@@ -43,11 +49,31 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     private MinioInit minioInit;
     @Resource
     private PhotoMapper photoMapper;
+    @Resource
+    private SettingMapper settingMapper;
 
+    //查询图片是否还有充足空间
+    public boolean SettingUsedFind(MultipartFile file){
+        QueryWrapper<Setting> settingQueryWrapper = new QueryWrapper<>();
+        QueryWrapper<Setting> settingQueryWrapper1 = new QueryWrapper<>();
+        settingQueryWrapper.eq("user_id",StpUtil.getLoginIdAsLong());
+        settingQueryWrapper1.eq("user_id",1);
+        Setting setting = settingMapper.selectOne(settingQueryWrapper);
+        FormatSize formatSize = new FormatSize();
+        if(setting != null){
+            return Integer.parseInt(setting.getStorageSpace()) > Integer.parseInt((formatSize.formatSize(file.getSize()) + setting.getStorageUsed()));
+        }else{
+            Setting setting1 = settingMapper.selectOne(settingQueryWrapper1);
+            return Integer.parseInt(setting1.getStorageSpace()) > Integer.parseInt((formatSize.formatSize(file.getSize()) + setting1.getStorageUsed()));
+        }
+    }
     //上传图片
     @Override
     @Transactional
-    public LuckResult upload(MultipartFile file, PhotoAdd photoAdd) {
+    public synchronized LuckResult upload(MultipartFile file, PhotoAdd photoAdd) {
+        if(!SettingUsedFind(file)){
+            LuckResult.error("存储空间不足");
+        }
         Date date = DateUtil.date();
         String today= DateUtil.today();
         //获取图片名字
@@ -120,7 +146,31 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         newphoto.setPhotoTag(phototag);
         newphoto.setPhotoUrl(photourl);
         newphoto.setPhotoCreatTime(date);
-        photoMapper.insert(newphoto);
+        try {
+            photoMapper.insert(newphoto);
+        } catch (Exception e) {
+            throw new LuckCatError("新增图像数据失败");
+        }
+        //减少存储空间
+        FormatSize formatSize = new FormatSize();
+        QueryWrapper<Setting> settingQueryWrapper = new QueryWrapper<>();
+        QueryWrapper<Setting> settingQueryWrapper1 = new QueryWrapper<>();
+        UpdateWrapper<Setting> settingUpdateWrapper = new UpdateWrapper<>();
+        settingQueryWrapper.eq("user_id", StpUtil.getLoginIdAsLong());
+        settingQueryWrapper1.eq("user_id", 1);
+        try {
+            Setting settingByUser1 = settingMapper.selectOne(settingQueryWrapper);
+            if(settingByUser1 != null){
+                settingUpdateWrapper.eq("user_id",StpUtil.getLoginIdAsLong()).set("storage_used",formatSize.addStrings(settingByUser1.getStorageSpace(),formatSize.formatSize(file.getSize())));
+                settingMapper.update(null,settingUpdateWrapper);
+            }else{
+                Setting settingByUser2 = settingMapper.selectOne(settingQueryWrapper1);
+                settingUpdateWrapper.eq("user_id",1).set("storage_used",formatSize.addStrings(settingByUser2.getStorageSpace(),formatSize.formatSize(file.getSize())));
+                settingMapper.update(null,settingUpdateWrapper);
+            }
+        } catch (Exception e) {
+            throw new LuckCatError("空间修改出错");
+        }
         return LuckResult.success("文件上传成功");
     }
 
@@ -128,7 +178,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     @Override
     public LuckResult queryByUsername(PhotoPage photoPage) {
         //查询用户id
-        Long userid = findUserIdByName(photoPage.getUsername());
+        Long userid = StpUtil.getLoginIdAsLong();
         //查询图片
         try{
             QueryWrapper<Photo> photoQueryWrapper = new QueryWrapper<>();
@@ -188,41 +238,39 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         return LuckResult.error("查询错误");
     }
 
-    //查询用户id
-    private Long findUserIdByName(String username){
-        //查询用户id
-        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
-        userQueryWrapper.eq("username",username);
-        Long userid;
-        try {
-            userid = userMapper.selectOne(userQueryWrapper).getUid();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-            throw new LuckCatError("没有查询到用户id,用户未存在，或请重新查询");
-        }
-        return userid;
-    }
-
-    /**
-     * 修改图片标签
-     * @param photo
-     * @return
-     */
+    //收藏图片
     @Override
     @Transactional
-    public LuckResult modifyLabel(Photo photo) {
+    public LuckResult PhotoLove(PhotoFont photoFont) {
+        long userId = StpUtil.getLoginIdAsLong();
+        try {
+            UpdateWrapper<Photo> photoUpdateWrapper = new UpdateWrapper<>();
+            photoUpdateWrapper.eq("user_id",userId).set("photo_tag","love");
+            photoMapper.update(null,photoUpdateWrapper);
+        } catch (Exception e) {
+            throw new LuckCatError("图片收藏失败，请重试");
+        }
+        return LuckResult.success("收藏成功的喔！~");
+    }
+
+    //修改图片标签
+    @Override
+    @Transactional
+    public LuckResult modifyLabel(PhotoFont photoFont) {
         //条件构造器
         LambdaQueryWrapper<Photo> photoLambdaQueryWrapper = new LambdaQueryWrapper<>();
         photoLambdaQueryWrapper
-                .eq(Photo::getId,photo.getId())
-                .eq(Photo::getUserId,photo.getUserId());
+                .eq(Photo::getPhotoName, photoFont.getPhotoName())
+                .eq(Photo::getUserId, StpUtil.getLoginIdAsLong());
         try {
             //判断信息是否有效
             boolean exists = photoMapper.exists(photoLambdaQueryWrapper);
             if (!exists) {
                 return LuckResult.error("修改失败！信息不正确");
             }
-            int update = photoMapper.update(photo, photoLambdaQueryWrapper);
+            LambdaUpdateWrapper<Photo> PhotoLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+            PhotoLambdaUpdateWrapper.eq(Photo::getUserId, StpUtil.getLoginIdAsLong()).eq(Photo::getPhotoName, photoFont.getPhotoName()).set(Photo::getPhotoName,photoFont.getPhotoTag());
+            int update = photoMapper.update(null, PhotoLambdaUpdateWrapper);
             return update>0?LuckResult.success("修改成功"):LuckResult.error("修改失败,请稍后再试！");
         }catch (Exception e){
             throw new LuckCatError("修改失败,请稍后再试！");

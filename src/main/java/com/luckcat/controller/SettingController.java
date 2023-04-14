@@ -1,6 +1,5 @@
 package com.luckcat.controller;
 
-import cn.dev33.satoken.stp.StpUtil;
 import com.luckcat.dto.SettingRevise;
 import com.luckcat.service.SettingService;
 import com.luckcat.utils.LuckResult;
@@ -41,7 +40,7 @@ public class SettingController {
         if(settingRevise.getStorageSpace() == null || settingRevise.getStorageSize() == null ||settingRevise.getStorageQuantity() == null){
             return LuckResult.error("参数为空");
         }
-        if(Integer.parseInt(settingRevise.getStorageSpace())>(Integer.parseInt(settingRevise.getStorageSize()) * Integer.parseInt(settingRevise.getStorageQuantity()))){
+        if(Integer.parseInt(settingRevise.getStorageSpace())>(Integer.parseInt(settingRevise.getStorageSize()) * Integer.parseInt(settingRevise.getStorageQuantity()) / 1024)){
             return settingService.ReviseUserSetting(settingRevise);
         }else {
             return LuckResult.error("参数有误，请重新传递");
@@ -61,7 +60,7 @@ public class SettingController {
         if(settingRevise.getStorageSpace() == null || settingRevise.getStorageSize() == null ||settingRevise.getStorageQuantity() == null){
             return LuckResult.error("参数为空");
         }
-        if(Integer.parseInt(settingRevise.getStorageSpace())<(Integer.parseInt(settingRevise.getStorageSize()) * Integer.parseInt(settingRevise.getStorageQuantity()))){
+        if(Integer.parseInt(settingRevise.getStorageSpace())<(Integer.parseInt(settingRevise.getStorageSize()) * Integer.parseInt(settingRevise.getStorageQuantity()) / 1024)){
             return settingService.ReviseUserSettingOne(settingRevise);
         }else {
             return LuckResult.error("参数有误，请重新传递");
@@ -70,7 +69,6 @@ public class SettingController {
 
     /**
      * 获取用户设置数据
-     * @return
      */
     @ApiOperation("获取用户设置数据")
     @PostMapping("getSetting")

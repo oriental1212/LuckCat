@@ -1,8 +1,8 @@
 package com.luckcat.controller;
 
 import com.luckcat.dto.PhotoAdd;
+import com.luckcat.dto.PhotoFont;
 import com.luckcat.dto.PhotoPage;
-import com.luckcat.pojo.Photo;
 import com.luckcat.service.PhotoService;
 import com.luckcat.utils.LuckResult;
 import com.luckcat.utils.PhotoUtils;
@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 import java.util.Objects;
 
 import static com.luckcat.utils.LuckResult.*;
@@ -64,7 +63,7 @@ public class PhotoController  {
     @ApiOperation("通过用户查询所有图片地址")
     @GetMapping("/queryByUsername")
     public LuckResult queryByUsername(@RequestBody PhotoPage photoPage) {
-        if(!photoPage.getUsername().isEmpty() && photoPage.getPage()>0 && photoPage.getSize()>0){
+        if(photoPage.getPage()>0 && photoPage.getSize()>0){
             return photoService.queryByUsername(photoPage);
         }
         return error("你的用户名为空");
@@ -102,21 +101,29 @@ public class PhotoController  {
     }
 
     /**
-     * 删除数据
+     * 收藏图片
      *
-     * @param idList 主键结合
-     * @return 删除结果
+     * @param photoFont 前端图片类
+     * @return 成功结果
      */
-    @DeleteMapping
-    public LuckResult delete(@RequestParam("idList") List<Long> idList) {
-        return success(this.photoService.removeByIds(idList));
+    @GetMapping("/photoLove")
+    public LuckResult PhotoLove(@RequestBody PhotoFont photoFont) {
+        if (photoFont.getPhotoTag().equals("love")){
+            return photoService.PhotoLove(photoFont);
+        }
+        return LuckResult.error("该图片已被收藏");
     }
 
+    /**
+     * 修改图片标签
+     *
+     * @param photoFont 前端图片类
+     */
     @ApiOperation("修改图片标签")
     @PutMapping("/modifyLabel")
-    public LuckResult modifyLabel(@RequestBody Photo photo){
-        if (photo.getId() != null && photo.getUserId()!=null && photo.getPhotoTag()!=null) {
-            return photoService.modifyLabel(photo);
+    public LuckResult modifyLabel(@RequestBody PhotoFont photoFont){
+        if (photoFont.getPhotoName() != null && photoFont.getPhotoTag()!=null && photoFont.getPhotoUrl()!=null) {
+            return photoService.modifyLabel(photoFont);
         }
         return LuckResult.error("修改信息错误");
     }
