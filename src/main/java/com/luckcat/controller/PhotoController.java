@@ -1,5 +1,6 @@
 package com.luckcat.controller;
 
+import com.luckcat.config.Exception.LuckCatError;
 import com.luckcat.dto.PhotoAdd;
 import com.luckcat.dto.PhotoFont;
 import com.luckcat.dto.PhotoPage;
@@ -80,12 +81,15 @@ public class PhotoController  {
     public LuckResult upload(@RequestBody MultipartFile file,
                              @RequestParam("photoTag") String photoTag,
                              @RequestParam("userName") String userName) {
+        if (photoTag==null || userName==null){
+            return LuckResult.error("相关信息错误");
+        }
         for (Object type : photoUtils.AllPhotoType()) {
             if (Objects.equals(file.getContentType(), type)) {
                 return photoService.upload(file,new PhotoAdd(userName,photoTag));
             }
         }
-        return success("您的图片格式不对劲哟！");
+        return LuckResult.error("您的图片格式不对劲哟！");
     }
 
     /**

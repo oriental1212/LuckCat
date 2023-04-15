@@ -19,6 +19,4 @@ public class SettingRevise {
     private String storageSpace;
     //单个图片大小
     private String storageSize;
-    //图片数量
-    private String storageQuantity;
 }

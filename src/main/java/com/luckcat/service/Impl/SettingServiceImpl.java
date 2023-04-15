@@ -51,7 +51,6 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting> impl
                 newSetting.setUserId(1L);
                 newSetting.setStorageSpace(settingRevise.getStorageSpace());
                 newSetting.setStorageSize(settingRevise.getStorageSize());
-                newSetting.setStorageQuantity(settingRevise.getStorageQuantity());
                 newSetting.setStorageUsed("0");
                 settingMapper.insert(newSetting);
             } catch (Exception e) {
@@ -66,7 +65,6 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting> impl
                 settingUpdateWrapper.eq("user_id",1);
                 settingUpdateWrapper.set("storage_space",settingRevise.getStorageSpace());
                 settingUpdateWrapper.set("storage_size",settingRevise.getStorageSize());
-                settingUpdateWrapper.set("storage_quantity",settingRevise.getStorageQuantity());
                 settingMapper.update(null,settingUpdateWrapper);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -103,7 +101,6 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting> impl
                 newSetting.setUserId(StpUtil.getLoginIdAsLong());
                 newSetting.setStorageSpace(settingRevise.getStorageSpace());
                 newSetting.setStorageSize(settingRevise.getStorageSize());
-                newSetting.setStorageQuantity(settingRevise.getStorageQuantity());
                 newSetting.setStorageUsed("0");
                 settingMapper.insert(newSetting);
             } catch (Exception e) {
@@ -118,7 +115,6 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting> impl
                 settingUpdateWrapper.eq("user_id",StpUtil.getLoginIdAsLong());
                 settingUpdateWrapper.set("storage_space",settingRevise.getStorageSpace());
                 settingUpdateWrapper.set("storage_size",settingRevise.getStorageSize());
-                settingUpdateWrapper.set("storage_quantity",settingRevise.getStorageQuantity());
                 settingMapper.update(null,settingUpdateWrapper);
             } catch (Exception e) {
                 e.printStackTrace();

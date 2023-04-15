@@ -36,15 +36,10 @@ public class SettingController {
     @ApiOperation("总体用户修改设置")
     @PostMapping("/reviseUserSetting")
     public LuckResult ReviseUserSetting(@RequestBody SettingRevise settingRevise){
-        //判断图片的数量和每个图片大小相乘是不是大于了总容量
-        if(settingRevise.getStorageSpace() == null || settingRevise.getStorageSize() == null ||settingRevise.getStorageQuantity() == null){
+        if(settingRevise.getStorageSpace() == null || settingRevise.getStorageSize() == null){
             return LuckResult.error("参数为空");
         }
-        if(Integer.parseInt(settingRevise.getStorageSpace())>(Integer.parseInt(settingRevise.getStorageSize()) * Integer.parseInt(settingRevise.getStorageQuantity()) / 1024)){
-            return settingService.ReviseUserSetting(settingRevise);
-        }else {
-            return LuckResult.error("参数有误，请重新传递");
-        }
+        return settingService.ReviseUserSetting(settingRevise);
     }
 
     /**
@@ -56,15 +51,10 @@ public class SettingController {
     @ApiOperation("单个用户修改设置")
     @PostMapping("/reviseUserSettingOne")
     public LuckResult ReviseUserSettingOne(@RequestBody SettingRevise settingRevise){
-        //判断图片的数量和每个图片大小相乘是不是大于了总容量
-        if(settingRevise.getStorageSpace() == null || settingRevise.getStorageSize() == null ||settingRevise.getStorageQuantity() == null){
+        if(settingRevise.getStorageSpace() == null || settingRevise.getStorageSize() == null){
             return LuckResult.error("参数为空");
         }
-        if(Integer.parseInt(settingRevise.getStorageSpace())<(Integer.parseInt(settingRevise.getStorageSize()) * Integer.parseInt(settingRevise.getStorageQuantity()) / 1024)){
-            return settingService.ReviseUserSettingOne(settingRevise);
-        }else {
-            return LuckResult.error("参数有误，请重新传递");
-        }
+        return settingService.ReviseUserSettingOne(settingRevise);
     }
 
     /**
