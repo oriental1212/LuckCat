@@ -62,8 +62,8 @@ public class PhotoController  {
      * @return List数据
      */
     @ApiOperation("通过用户查询所有图片地址")
-    @GetMapping("/queryByUsername")
-    public LuckResult queryByUsername(@RequestBody PhotoPage photoPage) {
+    @PostMapping("/queryByUsername")
+     public LuckResult queryByUsername(@RequestBody PhotoPage photoPage) {
         if(photoPage.getPage()>0 && photoPage.getSize()>0){
             return photoService.queryByUsername(photoPage);
         }

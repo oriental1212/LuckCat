@@ -43,8 +43,9 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting> impl
             settingQueryWrapper.eq("user_id",1).select("storage_space");
             flag = settingMapper.selectOne(settingQueryWrapper);
             storageUsedMax = (String) objects.get(0);
+
             //查询修改数值是否已经小于使用数值了
-            if(Integer.parseInt(settingRevise.getStorageSpace()) > Integer.parseInt(storageUsedMax)){
+            if(Integer.parseInt(settingRevise.getStorageSpace()) > Double.parseDouble(storageUsedMax)){
                 //不存在
                 if(flag == null){
                     try {

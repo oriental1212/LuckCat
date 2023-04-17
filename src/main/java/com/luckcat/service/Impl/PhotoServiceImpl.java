@@ -172,12 +172,11 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         //查询图片
         try{
             QueryWrapper<Photo> photoQueryWrapper = new QueryWrapper<>();
-            photoQueryWrapper.select("photo_name","photo_tag","photo_url","photo_creat_time")
+            photoQueryWrapper.select("photo_name","photo_tag","photo_type","photo_url","photo_creat_time")
                     .eq("user_id",userid);
-            Page<Photo> Page = new Page<>(photoPage.getPage(),photoPage.getSize());
-            photoMapper.selectPage(Page,photoQueryWrapper);
-            List<Photo> records = Page.getRecords();
-            return LuckResult.success(records);
+            Page<Photo> page = new Page<>(photoPage.getPage(),photoPage.getSize());
+            Page<Photo> selectPage = photoMapper.selectPage(page, photoQueryWrapper);
+            return LuckResult.success(selectPage);
         }catch (LuckCatError error){
             error.printStackTrace();
             throw new LuckCatError("未查询成功，请稍后重试");
