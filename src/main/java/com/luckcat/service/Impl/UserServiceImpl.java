@@ -10,10 +10,12 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.luckcat.config.Exception.LuckCatError;
+import com.luckcat.dao.SettingMapper;
 import com.luckcat.dao.UserMapper;
 import com.luckcat.dto.UserLogin;
 import com.luckcat.dto.UserRegister;
 import com.luckcat.dto.UserRevise;
+import com.luckcat.pojo.Setting;
 import com.luckcat.pojo.User;
 import com.luckcat.service.UserService;
 import com.luckcat.utils.IdWorker;
@@ -52,11 +54,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Resource
     sendMail sendMail;
-
     @Resource
     MinioInit minioInit;
     @Resource
     RedisTemplate<String, Integer> redisTemplate;
+    @Resource
+    SettingMapper settingMapper;
 
     //新增用户方法
     @Override
@@ -89,6 +92,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         newUser.setAvatarAddress(avatarAddress);
         newUser.setAuthority(authority);
         userMapper.insert(newUser);
+        //为用户开辟新的存储空间
+        Setting setting = new Setting();
+        setting.setUserId(userid);
+        setting.setStorageUsed("0");
+        settingMapper.insert(setting);
         //设置用户登录
         try {
             StpUtil.login(userid);

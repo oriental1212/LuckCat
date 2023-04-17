@@ -55,24 +55,26 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
     //查询图片是否还有充足空间
     public boolean SettingUsedFind(MultipartFile file){
         QueryWrapper<Setting> settingQueryWrapper = new QueryWrapper<>();
-        QueryWrapper<Setting> settingQueryWrapper1 = new QueryWrapper<>();
-        settingQueryWrapper.eq("user_id",StpUtil.getLoginIdAsLong());
-        settingQueryWrapper1.eq("user_id",1);
+        settingQueryWrapper.eq("user_id",1);
         Setting setting = settingMapper.selectOne(settingQueryWrapper);
-        FormatSize formatSize = new FormatSize();
-        if(setting != null){
-            return Integer.parseInt(setting.getStorageSpace()) > Integer.parseInt((formatSize.formatSize(file.getSize()) + setting.getStorageUsed()));
-        }else{
+        if(setting.getStorageSpace() != null){
+            QueryWrapper<Setting> settingQueryWrapper1 = new QueryWrapper<>();
+            settingQueryWrapper1.eq("user_id",StpUtil.getLoginIdAsLong());
             Setting setting1 = settingMapper.selectOne(settingQueryWrapper1);
-            return Integer.parseInt(setting1.getStorageSpace()) > Integer.parseInt((formatSize.formatSize(file.getSize()) + setting1.getStorageUsed()));
+            String s = FormatSize.formatSize(file.getSize());
+            double sum = Double.parseDouble(s) + Integer.parseInt(setting1.getStorageUsed());
+            return sum < Integer.parseInt(setting.getStorageSpace());
+        }else{
+            return false;
         }
     }
+    //为用户增加使用空间
     //上传图片
     @Override
     @Transactional
     public synchronized LuckResult upload(MultipartFile file, PhotoAdd photoAdd) {
         if(!SettingUsedFind(file)){
-            LuckResult.error("存储空间不足");
+            return LuckResult.error("查询不到总体设置或存储空间不够");
         }
         Date date = DateUtil.date();
         String today= DateUtil.today();
@@ -151,25 +153,13 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         } catch (Exception e) {
             throw new LuckCatError("新增图像数据失败");
         }
-        //减少存储空间
-        FormatSize formatSize = new FormatSize();
-        QueryWrapper<Setting> settingQueryWrapper = new QueryWrapper<>();
-        QueryWrapper<Setting> settingQueryWrapper1 = new QueryWrapper<>();
-        UpdateWrapper<Setting> settingUpdateWrapper = new UpdateWrapper<>();
-        settingQueryWrapper.eq("user_id", StpUtil.getLoginIdAsLong());
-        settingQueryWrapper1.eq("user_id", 1);
+        //添加用户的存储空间使用量
         try {
-            Setting settingByUser1 = settingMapper.selectOne(settingQueryWrapper);
-            if(settingByUser1 != null){
-                settingUpdateWrapper.eq("user_id",StpUtil.getLoginIdAsLong()).set("storage_used",formatSize.addStrings(settingByUser1.getStorageSpace(),formatSize.formatSize(file.getSize())));
-                settingMapper.update(null,settingUpdateWrapper);
-            }else{
-                Setting settingByUser2 = settingMapper.selectOne(settingQueryWrapper1);
-                settingUpdateWrapper.eq("user_id",1).set("storage_used",formatSize.addStrings(settingByUser2.getStorageSpace(),formatSize.formatSize(file.getSize())));
-                settingMapper.update(null,settingUpdateWrapper);
-            }
+            UpdateWrapper<Setting> settingUpdateWrapper = new UpdateWrapper<>();
+            settingUpdateWrapper.eq("user_id",StpUtil.getLoginIdAsLong()).setSql("storage_used = storage_used + " + FormatSize.formatSize(file.getSize()));
+            settingMapper.update(null,settingUpdateWrapper);
         } catch (Exception e) {
-            throw new LuckCatError("空间修改出错");
+            throw new LuckCatError("用户存储空间修改出错");
         }
         return LuckResult.success("文件上传成功");
     }

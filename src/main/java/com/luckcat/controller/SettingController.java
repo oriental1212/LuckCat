@@ -28,7 +28,7 @@ public class SettingController {
     private SettingService settingService;
 
     /**
-     * 总体用户设置修改
+     * 用户设置修改
      *
      * @param settingRevise 用户设置
      * @return success
@@ -40,21 +40,6 @@ public class SettingController {
             return LuckResult.error("参数为空");
         }
         return settingService.ReviseUserSetting(settingRevise);
-    }
-
-    /**
-     * 单个用户设置修改
-     *
-     * @param settingRevise 用户设置
-     * @return success
-     */
-    @ApiOperation("单个用户修改设置")
-    @PostMapping("/reviseUserSettingOne")
-    public LuckResult ReviseUserSettingOne(@RequestBody SettingRevise settingRevise){
-        if(settingRevise.getStorageSpace() == null || settingRevise.getStorageSize() == null){
-            return LuckResult.error("参数为空");
-        }
-        return settingService.ReviseUserSettingOne(settingRevise);
     }
 
     /**
