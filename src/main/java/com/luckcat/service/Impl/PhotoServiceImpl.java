@@ -62,7 +62,7 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
             settingQueryWrapper1.eq("user_id",StpUtil.getLoginIdAsLong());
             Setting setting1 = settingMapper.selectOne(settingQueryWrapper1);
             String s = FormatSize.formatSize(file.getSize());
-            double sum = Double.parseDouble(s) + Integer.parseInt(setting1.getStorageUsed());
+            double sum = Double.parseDouble(s) + Double.parseDouble(setting1.getStorageUsed());
             return sum < Integer.parseInt(setting.getStorageSpace());
         }else{
             return false;
@@ -234,12 +234,19 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         long userId = StpUtil.getLoginIdAsLong();
         try {
             UpdateWrapper<Photo> photoUpdateWrapper = new UpdateWrapper<>();
-            photoUpdateWrapper.eq("user_id",userId).set("photo_tag","love");
-            photoMapper.update(null,photoUpdateWrapper);
+            photoUpdateWrapper.eq("user_id",userId).eq("photo_name",photoFont.getPhotoName()).eq("photo_creat_time",photoFont.getPhotoCreatTime());
+            if (!photoFont.getPhotoTag().equals("love")){
+                photoUpdateWrapper.set("photo_tag","love");
+                photoMapper.update(null,photoUpdateWrapper);
+                return LuckResult.success("图片收藏成功的喔！~");
+            }else {
+                photoUpdateWrapper.set("photo_tag","default");
+                photoMapper.update(null,photoUpdateWrapper);
+                return LuckResult.success("图片取消收藏成功的喔！~");
+            }
         } catch (Exception e) {
             throw new LuckCatError("图片收藏失败，请重试");
         }
-        return LuckResult.success("收藏成功的喔！~");
     }
 
     //修改图片标签

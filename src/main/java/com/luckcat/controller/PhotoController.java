@@ -110,12 +110,9 @@ public class PhotoController  {
      * @param photoFont 前端图片类
      * @return 成功结果
      */
-    @GetMapping("/photoLove")
+    @PostMapping("/photoLove")
     public LuckResult PhotoLove(@RequestBody PhotoFont photoFont) {
-        if (photoFont.getPhotoTag().equals("love")){
-            return photoService.PhotoLove(photoFont);
-        }
-        return LuckResult.error("该图片已被收藏");
+        return photoService.PhotoLove(photoFont);
     }
 
     /**

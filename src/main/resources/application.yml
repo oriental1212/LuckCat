@@ -17,6 +17,13 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher #基于AntPathMatcher的路径匹配
+#做限制的参数配置
+  servlet:
+    multipart:
+      enabled: true #默认支持文件上传
+      max-file-size: 1024MB # 最大支持文件大小
+      max-request-size: 1024MB # 最大支持请求大小
+
 
   # redis配置
   redis:
