@@ -24,10 +24,8 @@ import com.luckcat.service.PhotoService;
 import com.luckcat.utils.FormatSize;
 import com.luckcat.utils.LuckResult;
 import com.luckcat.utils.MinioInit;
-import io.minio.GetObjectArgs;
-import io.minio.GetObjectResponse;
-import io.minio.GetPresignedObjectUrlArgs;
-import io.minio.PutObjectArgs;
+import io.minio.*;
+import io.minio.errors.*;
 import io.minio.http.Method;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +34,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
 
@@ -135,7 +136,8 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 .method(Method.GET)
                 .build();
         try {
-            photourl = minioInit.createMinio().getPresignedObjectUrl(build);
+            String[] split = minioInit.createMinio().getPresignedObjectUrl(build).split("\\?");
+            photourl = split[0];
         } catch (Exception e) {
             e.printStackTrace();
             throw new LuckCatError("文件地址获取失败");
@@ -271,5 +273,29 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
         }catch (Exception e){
             throw new LuckCatError("修改失败,请稍后再试！");
         }
+    }
+
+    //删除图片
+    @Override
+    public LuckResult deletePhoto(PhotoFont photoFont) {
+        String[] split = photoFont.getPhotoName().split("-");
+        String filePath=Integer.parseInt(split[0])+"/"+Integer.parseInt(split[1])+"/"+Integer.parseInt(split[2])+"/"+photoFont.getPhotoName();
+        RemoveObjectArgs deleteObject = RemoveObjectArgs.builder().bucket(minioInit.getBuckNameOfPhoto()).object(filePath).build();
+        try {
+            minioInit.createMinio().removeObject(deleteObject);
+        } catch (Exception e) {
+            throw new LuckCatError("Minio删除失败");
+        }
+        LambdaQueryWrapper<Photo> wrapper = new LambdaQueryWrapper<>();
+        wrapper
+                .eq(Photo::getUserId,StpUtil.getLoginIdAsLong())
+                .eq(Photo::getPhotoName,photoFont.getPhotoName())
+                .eq(Photo::getPhotoCreatTime,photoFont.getPhotoCreatTime());
+        try {
+            photoMapper.delete(wrapper);
+        } catch (Exception e) {
+            throw new LuckCatError("数据库删除失败");
+        }
+        return LuckResult.success("删除成功");
     }
 }

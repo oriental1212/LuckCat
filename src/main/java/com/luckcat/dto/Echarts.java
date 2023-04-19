@@ -14,8 +14,6 @@ public class Echarts {
     private Long totalUser;
     //图片总数
     private Long totalPhoto;
-    //图片总占用
-    private Long totalSpace;
     //饼图标题
     private List<Object> barTitle;
     //饼图数据

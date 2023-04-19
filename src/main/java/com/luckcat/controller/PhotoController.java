@@ -129,5 +129,19 @@ public class PhotoController  {
         return LuckResult.error("修改信息错误");
     }
 
+    /**
+     * 删除图片
+     *
+     * @param photoFont 前端图片类
+     */
+    @ApiOperation("删除图片")
+    @PostMapping("/deletePhoto")
+    public LuckResult DeletePhoto(@RequestBody PhotoFont photoFont){
+        if(photoFont.getPhotoName() != null){
+            return photoService.deletePhoto(photoFont);
+        }
+        return LuckResult.error("图片名称为空哟");
+    }
+
 }
 

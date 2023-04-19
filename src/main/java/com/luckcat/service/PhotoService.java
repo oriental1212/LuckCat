@@ -17,4 +17,5 @@ public interface PhotoService extends IService<Photo> {
     LuckResult findAllPhoto();
     LuckResult PhotoLove(PhotoFont photoFont);
     LuckResult modifyLabel(PhotoFont photoFont);
+    LuckResult deletePhoto(PhotoFont photoFont);
 }

@@ -339,7 +339,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .method(Method.GET)
                 .build();
         try {
-            photoUrl = minioInit.createMinio().getPresignedObjectUrl(build);
+            String[] split = minioInit.createMinio().getPresignedObjectUrl(build).split("\\?");
+            photoUrl = split[0];
         } catch (ErrorResponseException | InsufficientDataException | InvalidKeyException | InvalidResponseException |
                  IOException | NoSuchAlgorithmException | XmlParserException | ServerException | InternalException e) {
             LuckResult.error("文件Url获取失败");

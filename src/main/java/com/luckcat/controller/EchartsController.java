@@ -42,10 +42,6 @@ public class EchartsController {
         //获取图片总数
         long totalPhoto = photoService.count();
         echartsData.setTotalPhoto(totalPhoto);
-        //获取图片总占用
-            //查询photo储存桶的总占用，暂且不会^.^
-
-
         /*
         获取各类图片(jpg,jpeg...)数量
             格式:type-count ;
