@@ -202,8 +202,6 @@ public class PhotoServiceImpl extends ServiceImpl<PhotoMapper, Photo> implements
                 byte[] bytes = os.toByteArray();
                 response.setCharacterEncoding("utf-8");
                 // 设置强制下载不打开
-                // res.setContentType("application/force-download");
-                response.addHeader("Content-Disposition", "attachment;fileName=" + filename);
                 try (ServletOutputStream stream = response.getOutputStream()){
                     stream.write(bytes);
                     stream.flush();

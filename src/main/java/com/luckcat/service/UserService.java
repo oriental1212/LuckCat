@@ -7,6 +7,7 @@ import com.luckcat.dto.UserRegister;
 import com.luckcat.dto.UserRevise;
 import com.luckcat.pojo.User;
 import com.luckcat.utils.LuckResult;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService extends IService<User> {
@@ -17,6 +18,7 @@ public interface UserService extends IService<User> {
     LuckResult updatePassword(String email,String captcha,String password);
     LuckResult findAllUser(Integer currentPage,Integer pageSize);
     LuckResult disableUser(String username);
+    LuckResult CancelDisableUser(String username);
     LuckResult PersonalRevise(UserRevise userRevise);
     LuckResult AvatarChange(MultipartFile file);
     LuckResult isExist(String account);

@@ -57,13 +57,26 @@ public class UserController  {
      * 禁用用户接口
      *
      * @param username 实体对象
-     * @return 登录结果
+     * @return 禁用结果
      */
     @ApiOperation("禁用用户接口")
     @GetMapping("/disableUser")
     public LuckResult disableUser(@RequestParam("username") String username){
         return userService.disableUser(username);
     }
+
+    /**
+     * 取消禁用用户接口
+     *
+     * @param username 实体对象
+     * @return 登录结果
+     */
+    @ApiOperation("取消禁用用户接口")
+    @GetMapping("/cancelDisableUser")
+    public LuckResult CancelDisableUser(@RequestParam("username") String username){
+        return userService.CancelDisableUser(username);
+    }
+
 
     /**
      * 查询所有用户

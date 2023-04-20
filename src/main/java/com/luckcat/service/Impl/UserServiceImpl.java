@@ -78,7 +78,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         long userid = new IdWorker(0, 0).nextId();
         //nickname默认为username
         //头像为默认头像
-        String avatarAddress = "http://127.0.0.1:" + serverPort + "/default.jpg";
+        String avatarAddress = "http://127.0.0.1:" + serverPort + "/static/default.jpg";
         //设置默认权限
         String authority = "user";
         //加密密码
@@ -241,6 +241,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     //禁用用户
+    @Override
     public LuckResult disableUser(String username){
         if(!StpUtil.hasRole("admin")){
             return LuckResult.error("用户权限不合法");
@@ -259,6 +260,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             userUpdateWrapper.eq("username",username).set("authority","disable");
             int update = userMapper.update(null, userUpdateWrapper);
             return update>0?LuckResult.success("禁用成功，禁用的用户名为：" + username):LuckResult.error("禁用失败");
+        }
+        return LuckResult.error("禁用失败，原因可能是未查到用户，或者无法禁用，请重试");
+    }
+
+    //取消禁用用户
+    @Override
+    public LuckResult CancelDisableUser(String username) {
+        if(!StpUtil.hasRole("admin")){
+            return LuckResult.error("用户权限不合法");
+        }
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.select("authority").eq("username",username);
+        User user = userMapper.selectOne(userQueryWrapper);
+        if(user.getAuthority().equals("admin")){
+            return LuckResult.error("您无法对管理员用户禁用");
+        }
+        if(user.getAuthority().equals("user")){
+            return LuckResult.error("您无法对未禁用的用户取消禁用");
+        }
+        if(user.getAuthority().equals("disable")){
+            UpdateWrapper<User> userUpdateWrapper = new UpdateWrapper<>();
+            userUpdateWrapper.eq("username",username).set("authority","user");
+            int update = userMapper.update(null, userUpdateWrapper);
+            return update>0?LuckResult.success("取消禁用成功，取消禁用的用户名为：" + username):LuckResult.error("取消禁用失败");
         }
         return LuckResult.error("禁用失败，原因可能是未查到用户，或者无法禁用，请重试");
     }

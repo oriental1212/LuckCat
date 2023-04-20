@@ -1,26 +1,26 @@
 package com.luckcat;
 
-import com.luckcat.dao.SettingMapper;
+import com.luckcat.utils.MinioInit;
+import io.minio.messages.Bucket;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+
 import javax.annotation.Resource;
-import java.text.DecimalFormat;
+import java.util.List;
+
 
 @SpringBootTest
 class LuckCatApplicationTests {
-
 	@Resource
-	SettingMapper settingMapper;
+	MinioInit minioInit;
 	@Test
-	void contextLoads(){
-		long fileS = 604440;
-		System.out.println((double) 604440 / 1048576);
-		DecimalFormat df = new DecimalFormat("0.00");
-		String wrongSize = "0MB";
-		if (fileS == 0) {
-			System.out.println(wrongSize);
-		}
-		System.out.println(df.format((double) fileS / 1048576));
+	void contextLoads() throws Exception{
+		List<Bucket> buckets = minioInit.createMinio().listBuckets();
+		buckets.forEach((bucket) -> {
+			System.out.println(bucket.name());
+			System.out.println(bucket.creationDate());
+			System.out.println("--------------");
+		});
 	}
 
 }
