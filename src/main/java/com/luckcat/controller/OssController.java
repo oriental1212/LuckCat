@@ -5,6 +5,7 @@ import com.luckcat.config.Exception.LuckCatError;
 import com.luckcat.dto.OssRevise;
 import com.luckcat.service.OssService;
 import com.luckcat.utils.LuckResult;
+import io.lettuce.core.dynamic.annotation.Param;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
@@ -58,5 +59,25 @@ public class OssController {
         }else{
             return LuckResult.error("权限错误");
         }
+    }
+
+    /**
+     * 更改Oss的的状态
+     *
+     * @param ossName，ossState
+     * @return 更改结果
+     */
+    @ApiOperation("更改Oss的的状态")
+    @GetMapping("/changeOssInfo/{ossName}/{ossState}")
+    public LuckResult ChangeOssState(@PathVariable("ossName") String ossName,@PathVariable("ossState") String ossState){
+        if(ossName != null && ossState != null){
+            if(StpUtil.hasRole("admin")){
+                return ossService.ChangeOssState(ossName,ossState);
+            }
+            else{
+                LuckResult.error("用户权限不正确");
+            }
+        }
+        return LuckResult.error("传递参数有误");
     }
 }

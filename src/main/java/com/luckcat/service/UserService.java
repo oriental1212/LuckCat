@@ -18,8 +18,10 @@ public interface UserService extends IService<User> {
     LuckResult updatePassword(String email,String captcha,String password);
     LuckResult findAllUser(Integer currentPage,Integer pageSize);
     LuckResult disableUser(String username);
+    LuckResult AdminUser(String username);
     LuckResult CancelDisableUser(String username);
     LuckResult PersonalRevise(UserRevise userRevise);
     LuckResult AvatarChange(MultipartFile file);
     LuckResult isExist(String account);
+    LuckResult GetUserAuthority();
 }

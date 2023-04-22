@@ -1,6 +1,7 @@
 package com.luckcat.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.luckcat.config.Exception.LuckCatError;
@@ -54,6 +55,7 @@ public class OssServiceImpl extends ServiceImpl<OssMapper, Oss> implements OssSe
                 List<Bucket> buckets = minioInit.createMinio().listBuckets();
                 buckets.forEach((bucket) -> bucketNameList.add(bucket.name()));
                 ossData.setOssBucketNames(bucketNameList);
+                results.add(ossData);
             }
         } catch (Exception e){
             throw new LuckCatError("遍历赋值失败");
@@ -64,6 +66,9 @@ public class OssServiceImpl extends ServiceImpl<OssMapper, Oss> implements OssSe
     //更改Oss的账号和密码
     @Override
     public LuckResult ChangeOssInfo(OssRevise ossRevise) {
+        if(InitOss(ossRevise)){
+            LuckResult.success("未查询到该oss，已添加");
+        }
         LambdaUpdateWrapper<Oss> updateWrapper = new LambdaUpdateWrapper<>();
         try {
             //不修改url
@@ -85,5 +90,37 @@ public class OssServiceImpl extends ServiceImpl<OssMapper, Oss> implements OssSe
             throw new LuckCatError("更新修改失败");
         }
         return LuckResult.success("修改成功");
+    }
+
+
+    //更改Oss的的状态
+    @Override
+    public LuckResult ChangeOssState(String ossName, String ossState) {
+        try {
+            LambdaUpdateWrapper<Oss> wrapper = new LambdaUpdateWrapper<>();
+            wrapper
+                    .eq(Oss::getName,ossName)
+                    .set(Oss::getState,ossState);
+            ossMapper.update(null,wrapper);
+        } catch (Exception e) {
+            throw new LuckCatError("oss状态修改失败");
+        }
+        return LuckResult.success("oss状态修改成功");
+    }
+
+    //查询oss是否存在，如果不存在则新增
+    private Boolean InitOss(OssRevise ossRevise){
+        LambdaQueryWrapper<Oss> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Oss::getName,ossRevise.getOssName());
+        if(ossMapper.selectOne(wrapper) != null){
+            return false;
+        }
+        Oss oss = new Oss();
+        oss.setName(ossRevise.getOssName());
+        oss.setUrl(ossRevise.getUrl());
+        oss.setAccessKey(ossRevise.getAccessKey());
+        oss.setSecretKey(ossRevise.getSecretKey());
+        ossMapper.insert(oss);
+        return true;
     }
 }

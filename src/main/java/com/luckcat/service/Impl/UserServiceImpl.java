@@ -80,7 +80,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //头像为默认头像
         String avatarAddress = "http://127.0.0.1:" + serverPort + "/static/default.jpg";
         //设置默认权限
-        String authority = "user";
+        String authority;
+        if(CheckSqlHaveUser()){
+            authority = "admin";
+        }else{
+            authority = "user";
+        }
         //加密密码
         String newPassword = BCrypt.hashpw(userRegister.getPassword(), BCrypt.gensalt(10));
         //添加用户
@@ -264,6 +269,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return LuckResult.error("禁用失败，原因可能是未查到用户，或者无法禁用，请重试");
     }
 
+    @Override
+    public LuckResult AdminUser(String username) {
+        if(!StpUtil.hasRole("admin")){
+            return LuckResult.error("用户权限不合法");
+        }
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.select("authority").eq("username",username);
+        User user = userMapper.selectOne(userQueryWrapper);
+        if(user.getAuthority().equals("admin")){
+            return LuckResult.error("该用户已经是管理员");
+        }
+        if(user.getAuthority().equals("user")){
+            UpdateWrapper<User> userUpdateWrapper = new UpdateWrapper<>();
+            userUpdateWrapper.eq("username",username).set("authority","admin");
+            int update = userMapper.update(null, userUpdateWrapper);
+            return update>0?LuckResult.success("设置管理员成功，管理员的用户名为：" + username):LuckResult.error("设置管理员失败");
+        }
+        return null;
+    }
+
     //取消禁用用户
     @Override
     public LuckResult CancelDisableUser(String username) {
@@ -396,4 +421,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return exists?LuckResult.success("欢迎回来"):LuckResult.error("该用户不存在");
     }
 
+    //获取用户权限
+    @Override
+    public LuckResult GetUserAuthority() {
+        User user;
+        try {
+            LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            userLambdaQueryWrapper
+                    .eq(User::getUid,StpUtil.getLoginIdAsLong())
+                    .select(User::getAuthority);
+            user = userMapper.selectOne(userLambdaQueryWrapper);
+        } catch (Exception e) {
+            throw new LuckCatError("查询用户权限失败");
+        }
+        return LuckResult.success(user.getAuthority());
+    }
+
+    //查询用户数据库是否有用户没有则添加admin权限
+    private boolean CheckSqlHaveUser(){
+        LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        User user = userMapper.selectOne(userLambdaQueryWrapper);
+        return user == null;
+    }
 }

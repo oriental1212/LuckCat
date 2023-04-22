@@ -66,6 +66,18 @@ public class UserController  {
     }
 
     /**
+     * 设置用户未管理员接口
+     *
+     * @param username 实体对象
+     * @return 设置结果
+     */
+    @ApiOperation("设置用户未管理员接口")
+    @GetMapping("/adminUser")
+    public LuckResult AdminUser(@RequestParam("username") String username){
+        return userService.AdminUser(username);
+    }
+
+    /**
      * 取消禁用用户接口
      *
      * @param username 实体对象
@@ -257,6 +269,16 @@ public class UserController  {
         }else {
             return LuckResult.error("查询失败");
         }
+    }
+
+    /**
+     * 获取用户权限
+     * @return userinfo
+     */
+    @ApiOperation("获取用户权限")
+    @GetMapping("/getUserAuthority")
+    public LuckResult GetUserAuthority(){
+        return userService.GetUserAuthority();
     }
 
 }
