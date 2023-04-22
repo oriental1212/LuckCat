@@ -33,7 +33,16 @@ public class LuckResult {
 
     public static LuckResult error(String msg){
         LuckResult result = new LuckResult();
+        result.setCode("500");
         result.setMsg(msg);
+        return result;
+    }
+
+    public static LuckResult info(Object data){
+        LuckResult result = new LuckResult();
+        result.setCode(SUCCESS_CODE);
+        result.setMsg("请求信息");
+        result.setData(data);
         return result;
     }
 
