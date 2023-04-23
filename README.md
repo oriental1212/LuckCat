@@ -10,7 +10,7 @@
 > ### 使用方法
 1. 根据版本安装minio服务和redis服务，并且根据以下注意事项修改相关配置
 2. 修改application中的mail设置`host`、`username`、`password`
-3. 运行压缩包中的start.bat文件
+3. 运行压缩包中的start.bat文件、启动服务：`./start.sh start_all`、停止服务`stop_all`、重启服务`restart_all`
 4. 访问`localhost:1216`开启服务，默认第一次注册用户为admin用户
 > ### Minio设置
 - 启动后创建`photo`和`avatar`两个bucket全部设置为public
