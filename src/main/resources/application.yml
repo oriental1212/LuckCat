@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://82.157.162.80:3306/luckcat?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/luckcat?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
     driverClassName: com.mysql.cj.jdbc.Driver
     username: luckcat
     password: root
@@ -30,7 +30,7 @@ spring:
     # Redis数据库索引（默认为0）
     database: 1
     # Redis服务器地址
-    host: 82.157.162.80
+    host: localhost
     # Redis服务器连接端口
     port: 6379
     # Redis服务器连接密码（默认为空）
@@ -46,7 +46,7 @@ spring:
         # 连接池中的最大空闲连接
         max-idle: 10
         # 连接池中的最小空闲连接
-        min-idle: 0
+        min-idle: 5
   # mail邮件配置
   mail:
     #配置smtp服务主机地址
@@ -56,9 +56,9 @@ spring:
     # 163     smtp.163.com       端口号465或994
     host: smtp.qq.com
     #发送者邮箱
-    username: 1304206691@qq.com
+    username: xxxxxxxxxx@qq.com
     #配置密码,注意不是真正的密码，而是刚刚申请到的授权码
-    password: cnchnwgasxndffaj
+    password: xxxxxxxxxxx
     #端口号465或587
     port: 587
     #默认的邮件编码为UTF-8
@@ -101,6 +101,6 @@ sa-token:
 minio:
   username: minioadmin
   key: minioadmin
-  url: http://82.157.162.80:9000
+  url: http://localhost:9000
   buckNameOfPhoto: photo
   buckNameOfAvatar: avatar
