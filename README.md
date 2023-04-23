@@ -24,6 +24,7 @@
 > ### Mysql设置
 - Mysql数据库端口为默认：`3306`
 - 默认用户名与密码为：`username: luckcat`、`password: root`
+- 导入压缩包中的`luckcat.sql`文件
 
 > ### Application修改
 - email服务需要在application中修改，位置位于压缩包根目录
